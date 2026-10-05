@@ -34,13 +34,21 @@ jobs:
             case "$sha" in "$BOOTSTRAP_SHA"*) echo "skip bootstrap $sha"; continue ;; esac
             merged=0
             for attempt in 1 2 3 4 5; do
-              # an API error counts as "not linked yet" and is retried instead of aborting under set -e
-              merged=$(gh api "repos/$REPO/commits/$sha/pulls" --jq '[.[] | select(.merged_at != null)] | length' 2>/dev/null || echo 0)
+              # Only the squash commit of a PR merged into main counts. A branch's original commits stay
+              # linked to their merged PR, so matching merge_commit_sha stops them being pushed to main.
+              # An API error counts as "not linked yet": it is logged and retried, not fatal under set -e.
+              filter="[.[] | select(.merged_at != null and .base.ref == \"main\" and .merge_commit_sha == \"$sha\")] | length"
+              if out=$(gh api "repos/$REPO/commits/$sha/pulls" --jq "$filter" 2>&1); then
+                merged=$out
+              else
+                echo "attempt $attempt for $sha: $out"
+                merged=0
+              fi
               if [ "$merged" -gt 0 ]; then break; fi
               sleep 10
             done
             if [ "$merged" -gt 0 ]; then
-              echo "ok      $sha came from a merged PR"
+              echo "ok      $sha is the squash commit of a PR merged into main"
             else
               echo "::error::$sha was pushed to main without a merged PR"
               failed=1
