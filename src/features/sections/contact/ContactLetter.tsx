@@ -6,6 +6,15 @@ import { textLinkClass } from "@/components/ui/TextLink";
 import { contactSchema } from "@/features/contact";
 import { showDraft } from "@/features/stage";
 
+const letterSchema = contactSchema.pick({ replyTo: true, name: true, company: true, topic: true });
+
+const FIELD_IDS: Record<string, string> = {
+  replyTo: "letter-email",
+  name: "letter-name",
+  company: "letter-company",
+  topic: "letter-topic",
+};
+
 const fieldClass =
   "mx-1 max-w-full border-b border-acc/40 bg-transparent px-1 font-serif text-acc italic transition-colors placeholder:text-acc/40 focus:border-acc focus:outline-none";
 
@@ -22,22 +31,29 @@ export function ContactLetter({ recipient }: { recipient: string }) {
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    const email = contactSchema.shape.replyTo.safeParse(form.email.trim());
-    if (!email.success) {
-      setError(email.error.issues[0]?.message ?? "Add an email address.");
-      document.getElementById("letter-email")?.focus();
+    // The same rules the server applies, so a draft that reaches the card can always be sent
+    const checked = letterSchema.safeParse({
+      replyTo: form.email.trim(),
+      name: form.name,
+      company: form.company,
+      topic: form.topic,
+    });
+    if (!checked.success) {
+      const issue = checked.error.issues[0];
+      const field = String(issue?.path[0] ?? "replyTo");
+      setError(issue?.message ?? "Check the letter.");
+      document.getElementById(FIELD_IDS[field] ?? "letter-email")?.focus();
       return;
     }
     setError("");
-    const name = form.name.trim();
-    const company = form.company.trim();
-    const topic = form.topic.trim() || "working together";
+    const { replyTo, name, company } = checked.data;
+    const topic = checked.data.topic ?? "working together";
     showDraft({
-      replyTo: email.data,
-      name: name || undefined,
-      company: company || undefined,
+      replyTo,
+      name,
+      company,
       topic,
-      message: `Hi ${recipient}, I'm ${name || "someone"}${company ? ` from ${company}` : ""}. I'd like to talk about ${topic}.`,
+      message: `Hi ${recipient}, I'm ${name ?? "someone"}${company ? ` from ${company}` : ""}. I'd like to talk about ${topic}.`,
       website: form.website,
     });
   };
@@ -51,6 +67,7 @@ export function ContactLetter({ recipient }: { recipient: string }) {
           aria-label="Your name"
           placeholder="your name"
           size={9}
+          maxLength={80}
           value={form.name}
           onChange={set("name")}
           autoComplete="name"
@@ -62,6 +79,7 @@ export function ContactLetter({ recipient }: { recipient: string }) {
           aria-label="Company"
           placeholder="company"
           size={8}
+          maxLength={80}
           value={form.company}
           onChange={set("company")}
           autoComplete="organization"
@@ -73,6 +91,7 @@ export function ContactLetter({ recipient }: { recipient: string }) {
           aria-label="Topic"
           placeholder="a role, a project…"
           size={14}
+          maxLength={160}
           value={form.topic}
           onChange={set("topic")}
           className={fieldClass}
@@ -86,6 +105,7 @@ export function ContactLetter({ recipient }: { recipient: string }) {
           aria-describedby="letter-error"
           placeholder="you@company.com"
           size={15}
+          maxLength={254}
           value={form.email}
           onChange={set("email")}
           autoComplete="email"

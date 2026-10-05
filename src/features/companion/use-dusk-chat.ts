@@ -4,9 +4,12 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from "ai";
 import { useEffect, useMemo, useRef } from "react";
 import type { DuskUIMessage, PageContext } from "@/features/agent";
-import { stageStore, useStage } from "@/features/stage";
+import { clearDraft, stageStore, useStage } from "@/features/stage";
 import { type CompanionConfig, greetingMessage } from "./config";
 import { runTool } from "./run-tool";
+
+/** Must match HISTORY in the chat handler. */
+const HISTORY = 12;
 
 const pageContext = (): PageContext => {
   const { section, projectId, roleSlug } = stageStore.get();
@@ -24,7 +27,16 @@ export function useDuskChat(config: CompanionConfig) {
     () =>
       new DefaultChatTransport<DuskUIMessage>({
         api: "/api/chat",
-        body: () => ({ pageContext: pageContext() }),
+        // Only the recent turns go up: the server reads no more than the last 12 anyway
+        prepareSendMessagesRequest: ({ id, messages, trigger, messageId }) => ({
+          body: {
+            id,
+            trigger,
+            messageId,
+            messages: messages.slice(-HISTORY),
+            pageContext: pageContext(),
+          },
+        }),
       }),
     [],
   );
@@ -67,6 +79,7 @@ export function useDuskChat(config: CompanionConfig) {
 
   const reset = () => {
     chat.stop();
+    clearDraft();
     chat.setMessages([greetingMessage(configRef.current)]);
     chat.clearError();
   };

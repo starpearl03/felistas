@@ -2,7 +2,7 @@
 // (which declares them to the model in P8). Enums come from content, so ids can't be invented.
 import { z } from "zod";
 import { SECTION_IDS, type SectionId } from "@/features/content";
-import { MOTION_LEVELS, type Motion } from "@/features/stage/motion";
+import { MOTION_LEVELS, type Motion } from "@/features/stage";
 
 export type ToolIds = {
   projects: readonly [string, ...string[]];

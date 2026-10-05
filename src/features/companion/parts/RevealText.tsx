@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type RevealTextProps = {
   text: string;
@@ -16,6 +16,17 @@ export function RevealText({ text, animate, onRevealingChange }: RevealTextProps
   const words = text.match(/\S+\s*/g) ?? [];
   const [shown, setShown] = useState(animate ? 0 : words.length);
   const done = shown >= words.length;
+
+  // However the reveal ends (finished, interrupted, or unmounted by Start over), say so once,
+  // so the sphere doesn't keep "speaking" and the chips come back
+  const report = useRef(onRevealingChange);
+  useEffect(() => {
+    report.current = onRevealingChange;
+  }, [onRevealingChange]);
+  useEffect(() => () => report.current?.(false), []);
+  useEffect(() => {
+    if (!animate) report.current?.(false);
+  }, [animate]);
 
   useEffect(() => {
     if (!animate) return;

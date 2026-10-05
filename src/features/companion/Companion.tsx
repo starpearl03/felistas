@@ -76,7 +76,7 @@ export function Companion({ config }: { config: CompanionConfig }) {
       className={cn(
         "z-5 box-border flex flex-col",
         // phones: a bottom sheet, folded to its header until opened
-        "fixed inset-x-0 bottom-0 h-[184px] rounded-t-[18px] px-4 pt-3 pb-[calc(14px+env(safe-area-inset-bottom,0px))] transition-[height] duration-400 ease-[cubic-bezier(.2,.7,.1,1)] data-open:h-[76%] max-desk:bg-[linear-gradient(0deg,rgba(var(--bg-rgb),.97)_78%,rgba(var(--bg-rgb),0))]",
+        "fixed inset-x-0 bottom-0 h-[184px] rounded-t-[18px] px-4 pt-3 pb-[calc(14px+env(safe-area-inset-bottom,0px))] transition-[height] duration-400 ease-[cubic-bezier(.2,.7,.1,1)] data-open:h-[76%] motion-reduce:transition-none max-desk:bg-[linear-gradient(0deg,rgba(var(--bg-rgb),.97)_78%,rgba(var(--bg-rgb),0))]",
         // desktop: the column under the sphere, no panel or divider
         "desk:absolute desk:inset-y-0 desk:right-auto desk:left-0 desk:h-auto! desk:w-(--col) desk:rounded-none desk:pt-[var(--lift,60vh)] desk:pr-[clamp(18px,2.2vw,30px)] desk:pb-[18px] desk:pl-[clamp(18px,2.2vw,30px)] desk:column-fade",
       )}

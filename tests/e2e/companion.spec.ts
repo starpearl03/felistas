@@ -140,6 +140,25 @@ test("start over returns to the greeting", async ({ page }) => {
   await expect(log(page)).toContainText("Who's visiting today?");
 });
 
+test("start over mid-reply brings the suggestions back and stops the sphere speaking", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.reload();
+  await ask(page, "who is Felistas?");
+  await companion(page).getByRole("button", { name: "Start over" }).click();
+  const sheet = await conversation(page);
+  await expect(sheet).toContainText("Who's visiting today?");
+  await expect(chip(page, "I'm a recruiter")).toBeVisible();
+  await expect(companion(page).getByText("Listening")).toBeVisible();
+});
+
+test("the intro resume link is a plain download, not a chat request", async ({ page }) => {
+  const link = page.locator('[data-sec="home"]').getByRole("link", { name: "Download resume" });
+  await expect(link).toHaveAttribute("href", "/resume/felistas-resume.pdf");
+  await expect(link).toHaveAttribute("download", "felistas-resume.pdf");
+});
+
 test.describe("on phones", () => {
   test.skip(({ isMobile }) => !isMobile, "the bottom sheet is phone-only");
 

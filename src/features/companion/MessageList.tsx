@@ -41,7 +41,7 @@ export function MessageList({
       role="log"
       aria-live="polite"
       aria-label="Conversation with Dusk"
-      className="scrollbar-none flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto [mask-image:linear-gradient(transparent,#000_28px)] px-1 pt-[18px] pb-2.5"
+      className="scrollbar-none flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto [mask-image:linear-gradient(transparent,var(--bg)_28px)] px-1 pt-[18px] pb-2.5"
     >
       {messages.map((m) =>
         m.role === "user" ? (

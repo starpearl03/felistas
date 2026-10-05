@@ -79,6 +79,19 @@ describe("POST /api/chat", () => {
     expect(await res.text()).toContain('"flow":{"step":"message","email":"ada@acme.com"}');
   });
 
+  it("keeps answering a long conversation by reading only the recent turns", async () => {
+    const history = Array.from({ length: 300 }, (_, i) =>
+      i % 2
+        ? { id: `a${i}`, role: "assistant", parts: [{ type: "text", text: "x".repeat(400) }] }
+        : userMsg("hi", `u${i}`),
+    );
+    const res = await handleChat(
+      post({ messages: [...history, userMsg("show projects", "last")] }),
+      deps(),
+    );
+    expect(res.status).toBe(200);
+  });
+
   it("rejects bad bodies, empty asks and long questions", async () => {
     expect((await handleChat(post("{"), deps())).status).toBe(400);
     expect((await handleChat(post({ messages: [] }), deps())).status).toBe(400);

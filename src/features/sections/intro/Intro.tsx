@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Profile } from "@/features/content";
 import { Download } from "@/components/ui/icons";
+import { TextLink } from "@/components/ui/TextLink";
 import { AskDusk } from "../shared/AskDusk";
 import { Emphasis } from "../shared/Emphasis";
 import { GoTo } from "../shared/GoTo";
@@ -46,9 +47,9 @@ export function Intro({ profile }: { profile: Profile }) {
       >
         <AskDusk>Ask Dusk anything</AskDusk>
         {profile.resume.available ? (
-          <AskDusk question="Download resume" accent={false} icon={<Download />}>
+          <TextLink href={profile.resume.href} download={profile.resume.file} icon={<Download />}>
             Download resume
-          </AskDusk>
+          </TextLink>
         ) : null}
         <GoTo section="projects">See the work</GoTo>
       </div>

@@ -22,7 +22,7 @@ export function Toast() {
     <div
       role="status"
       aria-live="polite"
-      className={`pointer-events-none fixed bottom-[26px] left-1/2 z-20 max-w-[min(440px,calc(100%-32px))] -translate-x-1/2 rounded-xl bg-[color-mix(in_srgb,var(--bg)_86%,var(--acc))] px-4 py-[11px] text-center text-[13px] shadow-[0_18px_50px_rgba(0,0,0,.5)] transition-[opacity,translate] duration-300 ${
+      className={`pointer-events-none fixed bottom-[26px] left-1/2 z-20 max-w-[min(440px,calc(100%-32px))] -translate-x-1/2 rounded-xl bg-[color-mix(in_srgb,var(--bg)_86%,var(--acc))] px-4 py-[11px] text-center text-[13px] shadow-[0_18px_50px_rgba(var(--bg-rgb),.8)] transition-[opacity,translate] duration-300 ${
         visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       }`}
     >

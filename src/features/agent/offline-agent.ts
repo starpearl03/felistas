@@ -1,6 +1,7 @@
 // The built-in agent: answers from the record with simple matching when no AI key is set, or when the
 // model is unavailable. Port of `makeAgent` in docs/ui/Felistas Dusk.html, driven by content.
 // Pure (no I/O), so every flow is unit-tested.
+import { z } from "zod";
 import type { AgentRecord } from "./record";
 import type { ToolCall } from "./tools";
 import type { ContactFlow } from "./types";
@@ -23,7 +24,9 @@ export function greetingChips(rec: Pick<AgentRecord, "resumeAvailable">): string
   ].filter((c): c is string => c !== null);
 }
 
-const EMAIL = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+// Stops before trailing punctuation: "jane@acme.com." captures "jane@acme.com"
+const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
+const isEmail = (value: string) => z.email().safeParse(value).success;
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const wordIn = (text: string, word: string) =>
   new RegExp(`(^|[^a-z0-9])${escapeRe(word.toLowerCase())}($|[^a-z0-9])`).test(text);
@@ -56,7 +59,7 @@ export function respondOffline(
   }
   if (flow?.step === "email") {
     const email = raw.match(EMAIL)?.[0];
-    if (!email) {
+    if (!email || !isEmail(email)) {
       return reply(
         "That doesn't look like an email address. Try something like name@company.com, or say cancel.",
         { flow },
@@ -131,7 +134,26 @@ export function respondOffline(
     );
   }
 
-  const role = rec.roles.find((r) => wordIn(q, r.org) || wordIn(q, r.org.split(" ")[0]));
+  if (/\b(educat\w*|degree|stud\w*|universit\w*|school|certif\w*)\b/.test(q)) {
+    return reply(`${list(rec.education.map((e) => `${e.title} (${e.org}, ${e.year})`))}.`, {
+      tools: [{ name: "navigate", input: { section: "education" } }],
+      chips: ["Experience", contactChip(rec)],
+    });
+  }
+
+  // Availability and the FAQ come before roles and skills, so "open to freelance work?" is about
+  // availability, not the Freelance role
+  const faq = rec.faq.find((f) => overlap(q, f.question) >= 2);
+  if (faq) return reply(faq.answer, { chips: chips() });
+  if (/\b(availab\w*|open to|relocat\w*|remote|notice period)\b/.test(q)) {
+    return reply(`${rec.availability}.`, { chips: chips() });
+  }
+
+  const role = rec.roles.find(
+    (r) =>
+      wordIn(q, r.org) ||
+      (r.org.includes(" ") && r.org.split(" ")[0].length > 3 && wordIn(q, r.org.split(" ")[0])),
+  );
   if (role) {
     return reply(`${role.role} at ${role.org}, ${role.period}. ${role.points.join(". ")}.`, {
       tools: [{ name: "open_role", input: { role: role.slug } }],
@@ -139,7 +161,10 @@ export function respondOffline(
     });
   }
 
-  const skill = rec.skills.find((s) => wordIn(q, s)) ?? (/\bgolang\b/.test(q) ? "Go" : undefined);
+  // Short skill names ("Go", "R") are common words, so they only match as written
+  const skill =
+    rec.skills.find((s) => (s.length <= 2 ? raw.includes(s) && wordIn(q, s) : wordIn(q, s))) ??
+    (/\bgolang\b/.test(q) ? "Go" : undefined);
   if (skill) {
     const used = rec.projects.filter((p) => p.stack.includes(skill)).map((p) => p.name);
     return reply(
@@ -182,16 +207,6 @@ export function respondOffline(
       },
     );
   }
-
-  if (/\b(educat\w*|degree|stud\w*|universit\w*|school|certif\w*)\b/.test(q)) {
-    return reply(`${list(rec.education.map((e) => `${e.title} (${e.org}, ${e.year})`))}.`, {
-      tools: [{ name: "navigate", input: { section: "education" } }],
-      chips: ["Experience", contactChip(rec)],
-    });
-  }
-
-  const faq = rec.faq.find((f) => overlap(q, f.question) >= 2);
-  if (faq) return reply(faq.answer, { chips: chips() });
 
   if (/\b(about|who|yourself|bio)\b/.test(q) || q === rec.name.toLowerCase()) {
     return reply(rec.about[0] ?? rec.line, {
@@ -263,6 +278,21 @@ const STOP = new Set([
   "i",
   "does",
   "do",
+  // question words and pronouns say nothing about which FAQ is meant
+  "what",
+  "where",
+  "who",
+  "why",
+  "when",
+  "which",
+  "are",
+  "have",
+  "has",
+  "they",
+  "them",
+  "their",
+  "you",
+  "with",
 ]);
 const words = (s: string) =>
   s

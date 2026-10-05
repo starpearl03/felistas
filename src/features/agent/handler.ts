@@ -10,7 +10,8 @@ import { replyResponse } from "./stream";
 import type { ContactFlow } from "./types";
 
 export const MAX_INPUT_CHARS = 1_000;
-const MAX_BODY_CHARS = 64_000;
+// Generous: the client sends only the recent turns, and the server re-trims anyway
+const MAX_BODY_CHARS = 256_000;
 /** Only the recent turns matter to the agent */
 export const HISTORY = 12;
 
@@ -25,18 +26,16 @@ const flowSchema = z.union([
   z.object({ step: z.literal("message"), email: z.string().max(254) }),
 ]);
 
+const messageSchema = z.object({
+  id: z.string().max(100),
+  role: z.enum(["user", "assistant", "system"]),
+  parts: z.array(z.object({ type: z.string() }).loose()).max(40),
+  metadata: z.unknown().optional(),
+});
+
+// The history is checked only after trimming to the recent turns, so a long session keeps working
 const bodySchema = z.object({
-  messages: z
-    .array(
-      z.object({
-        id: z.string().max(100),
-        role: z.enum(["user", "assistant", "system"]),
-        parts: z.array(z.object({ type: z.string() }).loose()).max(40),
-        metadata: z.unknown().optional(),
-      }),
-    )
-    .min(1)
-    .max(200),
+  messages: z.array(z.unknown()).min(1),
   pageContext: z
     .object({
       section: z.enum(SECTION_IDS),
@@ -46,7 +45,8 @@ const bodySchema = z.object({
     .optional(),
 });
 
-type ChatBody = z.infer<typeof bodySchema>;
+type ChatMessage = z.infer<typeof messageSchema>;
+type ChatBody = { messages: ChatMessage[] };
 
 export type ChatDeps = {
   limiter: RateLimiter;
@@ -54,9 +54,23 @@ export type ChatDeps = {
   now: () => number;
 };
 
+let cachedRecord: Promise<AgentRecord> | null = null;
+
+/** Content can't change in a running production instance, so the record is built once. */
+async function siteRecord(): Promise<AgentRecord> {
+  if (process.env.NODE_ENV !== "production") return buildRecord(await loadSite());
+  cachedRecord ??= loadSite().then(buildRecord);
+  try {
+    return await cachedRecord;
+  } catch (err) {
+    cachedRecord = null; // retry on the next request rather than caching a failure
+    throw err;
+  }
+}
+
 export const defaultChatDeps: ChatDeps = {
   limiter: chatLimiter,
-  record: async () => buildRecord(await loadSite()),
+  record: siteRecord,
   now: Date.now,
 };
 
@@ -99,7 +113,9 @@ export async function handleChat(request: Request, deps: ChatDeps = defaultChatD
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) return error(400, "invalid", "The request was not valid.");
 
-  const messages = parsed.data.messages.slice(-HISTORY);
+  const recent = z.array(messageSchema).safeParse(parsed.data.messages.slice(-HISTORY));
+  if (!recent.success) return error(400, "invalid", "The request was not valid.");
+  const messages = recent.data;
   const text = lastUserText(messages);
   if (!text) return error(400, "invalid", "Send a message to ask Dusk something.");
   if (text.length > MAX_INPUT_CHARS) {

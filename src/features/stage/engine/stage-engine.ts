@@ -233,8 +233,25 @@ export function createStageEngine({
     loop.poke();
   };
 
+  // In on-demand mode a single poke would draw the sphere where the sheet was; keep drawing while
+  // the sheet settles so the sphere lands in its slot
+  let followTimer: ReturnType<typeof setInterval> | undefined;
+  let lastOpen = stageStore.get().chatOpen;
+  const follow = (ms: number) => {
+    clearInterval(followTimer);
+    const until = performance.now() + ms;
+    followTimer = setInterval(() => {
+      loop.poke();
+      if (performance.now() > until) clearInterval(followTimer);
+    }, 40);
+  };
+
   const onStoreChange = () => {
-    const { motion, flash } = stageStore.get();
+    const { motion, flash, chatOpen } = stageStore.get();
+    if (chatOpen !== lastOpen) {
+      lastOpen = chatOpen;
+      if (onDemand()) follow(600);
+    }
     if (motion !== lastMotion) {
       lastMotion = motion;
       resetHeadings();
@@ -298,6 +315,7 @@ export function createStageEngine({
       unsubscribe();
       clearTimeout(resizeTimer);
       clearTimeout(flashTimer);
+      clearInterval(followTimer);
       reducedMotion.removeEventListener("change", syncLoopMode);
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerleave", onPointerLeave);

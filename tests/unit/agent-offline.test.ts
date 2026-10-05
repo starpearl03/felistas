@@ -98,6 +98,18 @@ describe("visitor intents", () => {
     expect(ask("are they willing to relocate?").text).toContain("relocation");
   });
 
+  it("keeps common words from matching skills and roles", () => {
+    // "go" is not the Go language, and "freelance work" is about availability
+    expect(ask("Where did Felistas go to university?").tools[0]).toEqual({
+      name: "navigate",
+      input: { section: "education" },
+    });
+    const freelance = ask("Is Felistas open to freelance work?");
+    expect(freelance.tools.map((t) => t.name)).not.toContain("open_role");
+    expect(freelance.text).toMatch(/open to/i);
+    expect(ask("Do they write Go?").text).toContain("Go is part of");
+  });
+
   it("redirects unknown questions without inventing anything", () => {
     const r = ask("what is their favourite colour?");
     expect(r.tools).toEqual([]);
@@ -114,6 +126,9 @@ describe("the contact flow", () => {
     const bad = ask("my email is nope", start.flow);
     expect(bad.flow).toEqual({ step: "email" });
     expect(bad.text).toMatch(/doesn't look like an email/);
+
+    const punctuated = ask("it's jane@acme.com.", start.flow);
+    expect(punctuated.flow).toEqual({ step: "message", email: "jane@acme.com" });
 
     const email = ask("sure, ada@acme.com", start.flow);
     expect(email.flow).toEqual({ step: "message", email: "ada@acme.com" });
