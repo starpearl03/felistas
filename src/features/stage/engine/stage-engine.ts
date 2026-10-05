@@ -28,7 +28,10 @@ export function createStageEngine({
   sphereCanvas,
   word,
 }: StageElements): StageEngine {
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  // On-demand drawing only while the visitor prefers reduced motion AND stays on Still.
+  // An explicit Calm or Lively choice wins over the OS preference (UI-SPEC §7).
+  const onDemand = () => reducedMotion.matches && stageStore.get().motion === "still";
   const fonts = readFontFamilies();
   const field = new GlyphField(glyphCanvas, fonts);
   const sphere = new GlyphSphere(sphereCanvas, fonts, window.innerWidth < 700 ? 240 : 380);
@@ -58,14 +61,15 @@ export function createStageEngine({
       color: PALETTE.hi[0],
     });
 
-    field.frame(t, { motion, nameStrength: 1, boost: 1, lights, reduced });
+    field.frame(t, { motion, nameStrength: 1, boost: 1, lights, reduced: onDemand() });
     sphere.gaze = hasPointer
       ? { x: (pointer.x - geo.x) / (W * 0.5), y: (pointer.y - geo.y) / (H * 0.5) }
       : null;
     sphere.frame(t, geo, motion);
   };
 
-  const loop = createLoop(frame, { reduced });
+  const loop = createLoop(frame, { continuous: !onDemand() });
+  const syncLoopMode = () => loop.setContinuous(!onDemand());
 
   const resize = () => {
     field.resize();
@@ -94,8 +98,10 @@ export function createStageEngine({
 
   const unsubscribe = stageStore.subscribe(() => {
     syncAttributes();
+    syncLoopMode();
     loop.poke();
   });
+  reducedMotion.addEventListener("change", syncLoopMode);
 
   root.addEventListener("pointermove", onPointerMove);
   root.addEventListener("pointerleave", onPointerLeave);
@@ -115,6 +121,7 @@ export function createStageEngine({
       loop.destroy();
       field.destroy();
       unsubscribe();
+      reducedMotion.removeEventListener("change", syncLoopMode);
       clearTimeout(resizeTimer);
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerleave", onPointerLeave);
