@@ -11,6 +11,8 @@ describe("the real content/ folder", () => {
 
     expect(site.profile.name).toBe("Felistas");
     expect(site.profile.about.length).toBeGreaterThan(0);
+    expect(site.profile.line).not.toContain("*");
+    expect(site.profile.lineParts.some((p) => p.em)).toBe(true);
     expect(site.skills.groups.flatMap((g) => g.items)).toContain("Go");
 
     const projectIds = site.projects.map((p) => p.id);

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { paragraphs, sectionsByHeading, splitFrontmatter } from "@/features/content/markdown";
+import {
+  emphasisParts,
+  paragraphs,
+  plainText,
+  sectionsByHeading,
+  splitFrontmatter,
+} from "@/features/content/markdown";
 
 describe("splitFrontmatter", () => {
   it("parses YAML and trims the body", () => {
@@ -48,5 +54,21 @@ describe("sectionsByHeading", () => {
       { heading: "First?", text: "Answer one." },
       { heading: "Second?", text: "Part A.\n\nPart B." },
     ]);
+  });
+});
+
+describe("emphasisParts and plainText", () => {
+  it("splits *emphasis* from plain text", () => {
+    expect(emphasisParts("stay *calm* under load")).toEqual([
+      { text: "stay ", em: false },
+      { text: "calm", em: true },
+      { text: " under load", em: false },
+    ]);
+    expect(plainText("stay *calm* under load")).toBe("stay calm under load");
+  });
+
+  it("leaves text without markers, and unmatched asterisks, alone", () => {
+    expect(emphasisParts("no markers")).toEqual([{ text: "no markers", em: false }]);
+    expect(plainText("5 * 3 is 15")).toBe("5 * 3 is 15");
   });
 });
