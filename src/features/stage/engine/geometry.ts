@@ -39,6 +39,26 @@ export function introProgress(scrollTop: number, viewportHeight: number): number
   return smoothstep(clamp(scrollTop / (viewportHeight * 0.6)));
 }
 
+/** Where the sphere docks on phones: the slot in the companion sheet header (UI-SPEC §9). */
+export function sheetSlot(W: number, H: number): { x: number; y: number } {
+  return { x: Math.min(36, W / 2), y: H - 124 };
+}
+
+/**
+ * The current section: the last one whose top is at or above 45% of the viewport (UI-SPEC §5.4).
+ * Computed from scroll position every frame, so it never depends on IntersectionObserver.
+ */
+export function detectSection<T extends string>(
+  sections: readonly { id: T; top: number }[],
+  scrollTop: number,
+  viewportHeight: number,
+): T | null {
+  const line = scrollTop + viewportHeight * 0.45;
+  let current: T | null = sections[0]?.id ?? null;
+  for (const s of sections) if (s.top <= line) current = s.id;
+  return current;
+}
+
 /** Where the name FELISTAS is spelled in glyphs. */
 export function namePlacement(W: number, H: number): Placement {
   const col = columnWidth(W);
