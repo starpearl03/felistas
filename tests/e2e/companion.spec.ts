@@ -126,9 +126,13 @@ test("Ask Dusk links send the question to the conversation", async ({ page }) =>
     sc.scrollTop = sc.querySelector<HTMLElement>('[data-sec="projects"]')!.offsetTop;
   });
   await page.getByRole("button", { name: /Ask Dusk about Ledgerline/ }).click();
-  const convo = await conversation(page);
-  await expect(convo).toContainText("Tell me about Ledgerline");
-  await expect(convo).toContainText("Ledgerline is payments infrastructure");
+  // On phones the answer's open_project folds the sheet whenever it lands (the runtime may still
+  // be loading), so reopen until the whole exchange is readable
+  await expect(async () => {
+    const convo = await conversation(page);
+    await expect(convo).toContainText("Tell me about Ledgerline", { timeout: 1_000 });
+    await expect(convo).toContainText("Ledgerline is payments infrastructure", { timeout: 1_000 });
+  }).toPass({ timeout: 10_000 });
 });
 
 test("start over returns to the greeting", async ({ page }) => {
