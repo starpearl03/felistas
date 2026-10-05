@@ -77,7 +77,8 @@ export function createStageEngine({
   const pointer = { x: OUTSIDE, y: OUTSIDE };
   const name = { word, place: namePlacement };
   let entered: SectionId | null = null;
-  let threadAlpha = 0;
+  // The thread fades out from its old section before fading in to the next one
+  const thread = { alpha: 0, section: null as SectionId | null };
   let lastMotion = stageStore.get().motion;
   let lastFlashId = 0;
   let flashTimer: ReturnType<typeof setTimeout> | undefined;
@@ -174,17 +175,23 @@ export function createStageEngine({
     if (!ctx) return;
 
     // Thread: desktop only, once docked, to the eyebrow of the section in view (UI-SPEC §5.2)
-    const anchor = current && current !== "home" && columnWidth(W) ? anchorOf(current) : null;
-    let target = null;
-    if (anchor) {
+    const anchorPoint = (id: SectionId | null) => {
+      const anchor = id && id !== "home" && columnWidth(W) ? anchorOf(id) : null;
+      if (!anchor) return null;
       const r = anchor.getBoundingClientRect();
-      target = { x: r.left - origin.left - 10, y: r.top - origin.top + r.height / 2 };
+      return { x: r.left - origin.left - 10, y: r.top - origin.top + r.height / 2 };
+    };
+    const wanted = anchorPoint(current);
+    let visible = false;
+    if (current && wanted && thread.section !== current && thread.alpha > 0.02) {
+      visible = false; // finish fading out of the previous section first
+    } else if (current && wanted) {
+      thread.section = current;
+      visible = k > 0.9 && wanted.y > 40 && wanted.y < H - 40;
     }
-    threadAlpha = nextThreadAlpha(
-      threadAlpha,
-      !!target && k > 0.9 && target.y > 40 && target.y < H - 40,
-    );
-    if (target) drawThread(ctx, t, geo, target, threadAlpha, fonts.mono);
+    thread.alpha = nextThreadAlpha(thread.alpha, visible);
+    const target = anchorPoint(thread.section);
+    if (target) drawThread(ctx, t, geo, target, thread.alpha, fonts.mono);
 
     flights.draw(ctx, t, geo, origin);
   };
@@ -210,7 +217,11 @@ export function createStageEngine({
       field.flash(flash.word, flashPlacement, flash.ms, name);
       root.dataset.flash = flash.word;
       clearTimeout(flashTimer);
-      flashTimer = setTimeout(() => delete root.dataset.flash, flash.ms);
+      flashTimer = setTimeout(() => {
+        delete root.dataset.flash;
+        // on-demand mode draws only when poked: redraw so the name returns
+        loop.poke();
+      }, flash.ms + 20);
     }
     syncAttributes();
     syncLoopMode();

@@ -3,6 +3,16 @@ import { expect, type Page, test } from "@playwright/test";
 const stage = (page: Page) => page.locator("[data-stage]");
 const heading = (page: Page, id: string) => page.locator(`[data-sec="${id}"] [data-fly]`);
 
+/** A cheap hash of the glyph canvas, to tell whether it was redrawn differently. */
+const glyphPrint = (page: Page) =>
+  page.evaluate(() => {
+    const c = document.querySelector<HTMLCanvasElement>('canvas[data-layer="glyphs"]')!;
+    const data = c.getContext("2d")!.getImageData(0, 0, c.width, c.height).data;
+    let h = 0;
+    for (let i = 0; i < data.length; i += 4 * 13) h = (h * 31 + data[i]) | 0;
+    return h;
+  });
+
 /** Jumps the scroller to a section, the way any navigation ends up. */
 const goTo = (page: Page, id: string) =>
   page.evaluate((sec) => {
@@ -69,5 +79,22 @@ test.describe("on still", () => {
     await page.getByRole("button", { name: "still" }).click();
     await page.getByRole("button", { name: "lively" }).click();
     await expect(heading(page, "education")).toHaveClass(/flying/);
+  });
+});
+
+test.describe("with reduced motion on still", () => {
+  test.use({ reducedMotion: "reduce" });
+
+  test("a flashed word clears without further input", async ({ page, isMobile }) => {
+    test.skip(isMobile, "hover needs a pointer");
+    await page.goto("/");
+    await expect(stage(page)).toHaveAttribute("data-motion", "still");
+    await goTo(page, "projects");
+    await page.getByRole("button", { name: /Atlas/ }).hover();
+    await expect(stage(page)).toHaveAttribute("data-flash", "ATLAS");
+    const during = await glyphPrint(page);
+    // keep the mouse still: only the end of the flash may redraw the field
+    await expect(stage(page)).not.toHaveAttribute("data-flash", "ATLAS", { timeout: 5000 });
+    await expect.poll(() => glyphPrint(page), { timeout: 2000 }).not.toBe(during);
   });
 });
