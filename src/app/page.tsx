@@ -1,9 +1,32 @@
+import { buildRecord, greeting, greetingChips } from "@/features/agent";
+import { Companion, type CompanionConfig } from "@/features/companion";
 import { loadSite } from "@/features/content/server";
 import { About, Contact, Education, Experience, Intro, Projects } from "@/features/sections";
 import { Stage, TopBar } from "@/features/stage";
 
 export default async function Home() {
   const site = await loadSite();
+  const record = buildRecord(site);
+  const { resume } = site.profile;
+
+  const companion: CompanionConfig = {
+    name: site.profile.name,
+    greeting: greeting(record),
+    greetingChips: greetingChips(record),
+    resume: {
+      available: resume.available,
+      href: resume.href,
+      file: resume.file,
+      pages: resume.pages,
+      size: resume.size,
+      updated: resume.updated,
+    },
+    projects: site.projects.map(({ id, name }) => ({ id, name })),
+    ids: {
+      projects: site.projects.map((p) => p.id) as [string, ...string[]],
+      roles: site.experience.map((r) => r.slug) as [string, ...string[]],
+    },
+  };
 
   return (
     <Stage word={site.profile.name.toUpperCase()}>
@@ -22,6 +45,7 @@ export default async function Home() {
           <Contact profile={site.profile} />
         </div>
       </main>
+      <Companion config={companion} />
     </Stage>
   );
 }

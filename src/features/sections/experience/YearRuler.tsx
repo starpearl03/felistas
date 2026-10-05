@@ -3,6 +3,7 @@
 import type { Role } from "@/features/content";
 import { selectRole, useStage } from "@/features/stage";
 import { cn } from "@/lib/cn";
+import { AskDusk } from "../shared/AskDusk";
 
 export type RoleSummary = Pick<
   Role,
@@ -86,6 +87,9 @@ export function YearRuler({ roles, from, to }: YearRulerProps) {
             <b className="font-normal text-acc">{selected.org}</b> · {selected.period}
             {selected.current ? " · current" : ""}
           </p>
+          <div className="mt-[18px]">
+            <AskDusk question={`Tell me about ${selected.org}`}>Ask Dusk about this role</AskDusk>
+          </div>
         </div>
         <ul className="m-0 grid list-none gap-3.5 p-0">
           {selected.points.map((pt) => (
