@@ -1,0 +1,18 @@
+node_modules
+.next
+out
+build
+coverage
+test-results
+playwright-report
+blob-report
+package-lock.json
+next-env.d.ts
+src/generated
+.cache
+.docs
+CLAUDE.md
+AGENTS.md
+# the approved prototype is kept exactly as exported
+docs/ui/*.html
+docs/ui/Felistas Dusk.md
