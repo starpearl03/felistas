@@ -1,0 +1,54 @@
+// Stage layout maths (UI-SPEC §4, §5.1). Pure functions of the viewport, so they are unit-tested.
+import { clamp, lerp, smoothstep } from "@/lib/math";
+
+/** Below this width the companion column becomes a bottom sheet. Mirrors the `desk` breakpoint in CSS. */
+export const DESK_MIN_WIDTH = 900;
+
+export type Circle = { x: number; y: number; R: number };
+
+/** A box that a word is fitted into, centred on (x, y). */
+export type Placement = { x: number; y: number; w: number; h: number };
+
+/** Mirrors `--col: clamp(340px, 30vw, 440px)`; zero on phones. */
+export function columnWidth(W: number): number {
+  return W < DESK_MIN_WIDTH ? 0 : clamp(W * 0.3, 340, 440);
+}
+
+/** The large sphere on the first screen. */
+export function heroSphere(W: number, H: number): Circle {
+  const col = columnWidth(W);
+  if (!col) return { x: W / 2, y: H * 0.2, R: Math.min(W * 0.27, H * 0.13) };
+  return { x: col / 2, y: H * 0.33, R: Math.min(col * 0.42, H * 0.29) };
+}
+
+/** The sphere docked at the top of the column. It stays large; on phones it sits in the sheet header slot. */
+export function dockedSphere(W: number, H: number, slot?: { x: number; y: number }): Circle {
+  const col = columnWidth(W);
+  if (!col) return { x: slot?.x ?? W / 2, y: slot?.y ?? H * 0.2, R: 17 };
+  const R = Math.min(col * 0.3, H * 0.17);
+  return { x: col / 2, y: 64 + R, R };
+}
+
+export function sphereAt(hero: Circle, dock: Circle, k: number): Circle {
+  return { x: lerp(hero.x, dock.x, k), y: lerp(hero.y, dock.y, k), R: lerp(hero.R, dock.R, k) };
+}
+
+/** 0 on the intro, 1 once the visitor has scrolled 60% of a screen, eased. */
+export function introProgress(scrollTop: number, viewportHeight: number): number {
+  if (viewportHeight <= 0) return 0;
+  return smoothstep(clamp(scrollTop / (viewportHeight * 0.6)));
+}
+
+/** Where the name FELISTAS is spelled in glyphs. */
+export function namePlacement(W: number, H: number): Placement {
+  const col = columnWidth(W);
+  if (!col) return { x: W / 2, y: H * 0.42, w: W * 0.92, h: H * 0.13 };
+  return { x: col + (W - col) / 2, y: H * 0.4, w: (W - col) * 0.9, h: H * 0.42 };
+}
+
+/** Where hovered project names and skills flash. */
+export function flashPlacement(W: number, H: number): Placement {
+  const col = columnWidth(W);
+  if (!col) return { x: W / 2, y: H * 0.3, w: W * 0.9, h: H * 0.12 };
+  return { x: col + (W - col) * 0.62, y: H * 0.62, w: (W - col) * 0.62, h: H * 0.26 };
+}
