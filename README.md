@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Felistas · portfolio
 
-## Getting Started
+The portfolio site of Felistas, a software engineer. The whole page is a calm, dark field of living glyphs, with an AI companion called **Dusk**, a rotating sphere made of glyphs. Visitors can ask Dusk about Felistas, jump to any section, download the resume, or leave a message.
 
-First, run the development server:
+> Status: project setup. The approved design is a working prototype in [`docs/ui`](docs/ui), and the app UI is not built yet.
+
+## Design
+
+| File | What it is |
+|---|---|
+| [`docs/ui/UI-SPEC.md`](docs/ui/UI-SPEC.md) | The full UI/UX specification: tokens, layout, animation maths, the chat and AI tools, each section, mobile, accessibility, and an acceptance checklist |
+| [`docs/ui/Felistas Dusk.html`](<docs/ui/Felistas Dusk.html>) | The approved prototype. Open it in a browser to see and use the exact design. It is the source of truth for exact values |
+| `docs/ui/Felistas Dusk.md` | An automatic text export of the prototype. Not useful on its own |
+
+## Stack
+
+| Concern | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict) |
+| Styling | Tailwind CSS v4, with the Dusk design tokens in `src/app/globals.css` |
+| Fonts | `next/font/google`: Instrument Serif, Geist, Geist Mono, Big Shoulders |
+| Animation | Hand-written Canvas 2D (glyph field, glyph sphere, flying headings) driven by one `requestAnimationFrame` loop; no WebGL or animation libraries |
+| AI | Vercel AI SDK 7 (`ai`, `@ai-sdk/react`, `@ai-sdk/google`) on the free Gemini tier: streaming chat with tools that drive the page, server-side only (`POST /api/chat`) |
+| Retrieval (RAG) | Hybrid BM25 + `gemini-embedding-001` with reciprocal rank fusion over a JSON index built from `content/` at build time (no vector database); answers cite their sources |
+| Email | Resend (`POST /api/contact`), input validated with zod |
+| Content | Markdown + YAML frontmatter in `content/`, validated with zod; one source for the pages, the RAG index and the offline agent |
+| Hosting | Vercel |
+
+## Getting started
+
+Requires Node.js 22 or newer (developed on Node 24).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # then fill in the keys
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The site works without keys. Without `GEMINI_API_KEY`, Dusk falls back to a local keyword matcher, and without Resend keys the contact form reports that sending is unavailable.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Required | Purpose |
+|---|---|---|
+| `GEMINI_API_KEY` | For live AI | Gemini key from [Google AI Studio](https://aistudio.google.com/apikey) (the free tier is enough) |
+| `GEMINI_MODEL` | No | Model id, default `gemini-flash-latest` |
+| `RESEND_API_KEY` | For email | Resend API key |
+| `CONTACT_TO_EMAIL` | For email | Inbox that receives visitor messages |
+| `CONTACT_FROM_EMAIL` | For email | Verified sender, for example `Dusk <dusk@felistas.dev>` |
+| `NEXT_PUBLIC_SITE_URL` | For production | Canonical URL for metadata and Open Graph |
 
-## Learn More
+### Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | Does |
+|---|---|
+| `npm run dev` | Start the dev server |
+| `npm run build` / `npm start` | Production build and serve |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | TypeScript, no emit |
+| `npm run check` | Lint and typecheck together |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Today:
 
-## Deploy on Vercel
+```
+docs/ui/               approved design: prototype + UI-SPEC.md
+public/resume/         felistas-resume.pdf (add the real file)
+src/app/               routes, root layout, global tokens
+src/content/profile.ts sample content (moves to content/ as Markdown)
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Target:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+content/                  Markdown + frontmatter: profile, skills, projects, experience, education, faq
+scripts/                  build-rag-index.ts, rag-eval.ts
+src/app/                  layout, page, metadata routes, api/chat, api/contact
+src/features/content/     zod schemas + server-only loader
+src/features/stage/       animation engine (glyph field, sphere, flights, thread), store, command bus
+src/features/sections/    Intro, About, Projects, Experience, Education, Contact
+src/features/companion/   Dusk chat UI: messages, tool lines, resume/draft cards, source chips
+src/features/agent/       tools, system prompt, hybrid retrieval, offline agent, rate limit
+src/features/contact/     contact schema + Resend sender
+src/components/ui/        shared primitives (TextLink, CopyButton, Toast)
+src/generated/            rag-index.json (built, gitignored)
+tests/                    unit, e2e (Playwright), rag golden set
+```
+
+## Before launch
+
+- [ ] Replace the sample content in `content/` with real details.
+- [ ] Add `public/resume/felistas-resume.pdf`.
+- [ ] Set the environment variables on Vercel and verify the Resend sending domain.
+- [ ] Go through the acceptance checklist in `docs/ui/UI-SPEC.md` §12.
