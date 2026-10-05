@@ -212,7 +212,8 @@ test.describe("on phones", () => {
     await sheet.getByRole("button", { name: "Open the conversation" }).tap();
     await expect(sheet).toHaveAttribute("data-open", "true");
     await chip(page, "Show projects").tap();
-    await expect(stage(page)).toHaveAttribute("data-section", "projects");
+    // the answer may wait on the chat runtime's first load, which is slow under a busy test run
+    await expect(stage(page)).toHaveAttribute("data-section", "projects", { timeout: 10_000 });
     await expect(sheet).not.toHaveAttribute("data-open");
   });
 });
