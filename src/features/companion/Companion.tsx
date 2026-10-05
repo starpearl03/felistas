@@ -1,13 +1,21 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Toast } from "@/components/ui/Toast";
+import type { DuskUIMessage } from "@/features/agent";
 import { closeChat, openChat, setVoice, stageStore, useStage } from "@/features/stage";
 import { cn } from "@/lib/cn";
-import { type CompanionConfig, GREETING_ID } from "./config";
-import { DraftCard } from "./DraftCard";
+import type { DuskChat } from "./chat-engine";
+import { type CompanionConfig, GREETING_ID, greetingMessage } from "./config";
 import { MessageList } from "./MessageList";
-import { useDuskChat } from "./use-dusk-chat";
+
+// The chat runtime (AI SDK and tool schemas) and the draft card load when first needed, so they
+// never delay the first paint
+const ChatEngine = lazy(() => import("./chat-engine"));
+const DraftCard = lazy(() => import("./DraftCard").then((m) => ({ default: m.DraftCard })));
+
+/** Loads the runtime once the page has settled, so it is usually ready before the first question */
+const IDLE_PRELOAD_MS = 2_500;
 
 const STATUS = { idle: "Listening", think: "Thinking", speak: "Responding" } as const;
 
@@ -18,8 +26,8 @@ const icon = "size-[15px]";
  * divider (only a fade). Below 900px it is a bottom sheet the sphere docks into (UI-SPEC §6, §9).
  */
 export function Companion({ config }: { config: CompanionConfig }) {
-  const chat = useDuskChat(config);
-  const { messages, status, sendMessage, error } = chat;
+  const chat = useLazyChat(config);
+  const { messages, status, error } = chat;
   const voice = useStage((s) => s.voice);
   const shape = useStage((s) => s.shape);
   const open = useStage((s) => s.chatOpen);
@@ -52,7 +60,7 @@ export function Companion({ config }: { config: CompanionConfig }) {
     const value = text.trim();
     if (!value || busy) return;
     setInput("");
-    void sendMessage({ text: value });
+    chat.send(value);
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -167,7 +175,11 @@ export function Companion({ config }: { config: CompanionConfig }) {
           </p>
         ) : null}
 
-        {draft ? <DraftCard key={draft.id} draft={draft} recipient={config.name} /> : null}
+        {draft ? (
+          <Suspense fallback={null}>
+            <DraftCard key={draft.id} draft={draft} recipient={config.name} />
+          </Suspense>
+        ) : null}
 
         {chips.length ? (
           <div className="flex flex-wrap gap-1.5 pt-0.5 pb-3">
@@ -198,6 +210,7 @@ export function Companion({ config }: { config: CompanionConfig }) {
           onChange={(e) => setInput(e.target.value)}
           // focus opens the sheet; click too, for a composer still focused after the sheet folded
           onFocus={() => {
+            chat.wake();
             if (!stageStore.get().chatOpen) openChat();
           }}
           onClick={() => {
@@ -232,6 +245,54 @@ export function Companion({ config }: { config: CompanionConfig }) {
         </span>
       </p>
       <Toast />
+      {chat.engine}
     </aside>
   );
+}
+
+/**
+ * The conversation, with its runtime loaded on demand. Until it arrives, Dusk shows the greeting from
+ * content; a message sent in the meantime is queued and shows as "thinking". The UI around it never
+ * remounts, so focus and typed text survive the hand-over.
+ */
+function useLazyChat(config: CompanionConfig) {
+  const greeting = useMemo(() => greetingMessage(config), [config]);
+  const [woken, setAwake] = useState(false);
+  const [queued, setQueued] = useState<string[]>([]);
+  const [live, setLive] = useState<DuskChat | null>(null);
+  const wake = useCallback(() => setAwake(true), []);
+
+  // Awake once asked anything, including an "Ask Dusk" link elsewhere on the page (the runtime
+  // reads that question itself), or once the page has settled
+  const asked = useStage((s) => s.ask !== null);
+  const awake = woken || asked;
+  useEffect(() => {
+    const timer = setTimeout(() => setAwake(true), IDLE_PRELOAD_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const waiting: DuskUIMessage[] = queued.map((text, i) => ({
+    id: `queued-${i}`,
+    role: "user",
+    parts: [{ type: "text", text }],
+  }));
+
+  const chat: DuskChat = live ?? {
+    messages: [greeting, ...waiting],
+    status: queued.length ? "submitted" : "ready",
+    error: undefined,
+    send: (text) => {
+      setQueued((q) => [...q, text]);
+      setAwake(true);
+    },
+    reset: () => setQueued([]),
+  };
+
+  const engine = awake ? (
+    <Suspense fallback={null}>
+      <ChatEngine config={config} queued={queued} onChange={setLive} />
+    </Suspense>
+  ) : null;
+
+  return { ...chat, wake, engine };
 }

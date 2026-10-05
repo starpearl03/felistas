@@ -3,10 +3,13 @@
 import { type FormEvent, useState } from "react";
 import { ArrowRight } from "@/components/ui/icons";
 import { textLinkClass } from "@/components/ui/TextLink";
-import { contactSchema } from "@/features/contact";
 import { showDraft } from "@/features/stage";
 
-const letterSchema = contactSchema.pick({ replyTo: true, name: true, company: true, topic: true });
+// The schema (zod) loads on the first submit, so it never weighs on the first paint
+const loadLetterSchema = () =>
+  import("@/features/contact").then(({ contactSchema }) =>
+    contactSchema.pick({ replyTo: true, name: true, company: true, topic: true }),
+  );
 
 const FIELD_IDS: Record<string, string> = {
   replyTo: "letter-email",
@@ -29,9 +32,10 @@ export function ContactLetter({ recipient }: { recipient: string }) {
   const set = (key: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     // The same rules the server applies, so a draft that reaches the card can always be sent
+    const letterSchema = await loadLetterSchema();
     const checked = letterSchema.safeParse({
       replyTo: form.email.trim(),
       name: form.name,
