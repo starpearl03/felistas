@@ -4,7 +4,13 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { cache } from "react";
 import type { z } from "zod";
-import { paragraphs, sectionsByHeading, splitFrontmatter } from "./markdown";
+import {
+  emphasisParts,
+  paragraphs,
+  plainText,
+  sectionsByHeading,
+  splitFrontmatter,
+} from "./markdown";
 import {
   educationSchema,
   faqSchema,
@@ -113,7 +119,12 @@ export async function loadSiteFrom(root: string): Promise<Site> {
   const all = [profile, skills, faq, ...projects, ...roles, ...education];
 
   return {
-    profile: { ...strip(profile.data), about: paragraphs(profile.body) },
+    profile: {
+      ...strip(profile.data),
+      line: plainText(profile.data.line),
+      lineParts: emphasisParts(profile.data.line),
+      about: paragraphs(profile.body),
+    },
     skills: { ...strip(skills.data), body: skills.body },
     projects: projects
       .map((p) => ({ ...strip(p.data), id: p.slug, body: p.body }))

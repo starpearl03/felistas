@@ -16,6 +16,7 @@ export const profileSchema = z.strictObject({
   now: text,
   facts: z.array(z.strictObject({ label: text, value: text })).min(1),
   email: z.email(),
+  domain: z.string().regex(/^[a-z0-9-]+(\.[a-z0-9-]+)+$/, "expected a domain like felistas.dev"),
   links: z.strictObject({ github: z.url(), linkedin: z.url() }),
   resume: z.strictObject({
     href: z.string().startsWith("/"),

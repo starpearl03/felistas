@@ -29,6 +29,26 @@ export function paragraphs(body: string): string[] {
     .filter((p) => p.length > 0);
 }
 
+/** Splits `*emphasis*` out of a single line of text. Unmatched asterisks stay as text. */
+export function emphasisParts(text: string): { text: string; em: boolean }[] {
+  const parts: { text: string; em: boolean }[] = [];
+  const re = /\*([^*\n]+)\*/g;
+  let last = 0;
+  for (const m of text.matchAll(re)) {
+    if (m.index > last) parts.push({ text: text.slice(last, m.index), em: false });
+    parts.push({ text: m[1], em: true });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) parts.push({ text: text.slice(last), em: false });
+  return parts;
+}
+
+/** The line with emphasis markers removed. */
+export const plainText = (text: string): string =>
+  emphasisParts(text)
+    .map((p) => p.text)
+    .join("");
+
 export type MarkdownSection = { heading: string; text: string };
 
 /** Splits a body into `## heading` sections. Text before the first heading is ignored. */
