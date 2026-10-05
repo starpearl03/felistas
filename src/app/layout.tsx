@@ -1,12 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Big_Shoulders, Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { loadSite } from "@/features/content/server";
+import { PALETTE } from "@/lib/palette";
 import { resolveSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 // Font roles are defined in docs/ui/UI-SPEC.md §2. Canvas code must read the
 // real family names from these CSS variables, because next/font renames them.
 const sans = Geist({ variable: "--ff-sans", subsets: ["latin"] });
-const mono = Geist_Mono({ variable: "--ff-mono", subsets: ["latin"] });
+// Not preloaded: small labels only, so it must not compete with the first paint on slow networks
+const mono = Geist_Mono({ variable: "--ff-mono", subsets: ["latin"], preload: false });
 const serif = Instrument_Serif({
   variable: "--ff-serif",
   subsets: ["latin"],
@@ -19,17 +22,28 @@ const display = Big_Shoulders({
   weight: "900",
   fallback: ["Impact", "Arial Narrow", "sans-serif"],
   adjustFontFallback: false,
+  // Not preloaded: only the canvas uses it, and it re-draws the name once the face arrives
+  preload: false,
 });
 
-export const metadata: Metadata = {
-  metadataBase: resolveSiteUrl(),
-  title: "Felistas · Software Engineer",
-  description:
-    "Backends, data pipelines and AI features that stay calm under load. Ask Dusk, the portfolio's AI, anything about Felistas.",
-};
+/** Title and description come from content/profile.md, like every other fact on the site. */
+export async function generateMetadata(): Promise<Metadata> {
+  const { profile } = await loadSite();
+  const title = `${profile.name} · ${profile.role}`;
+  const description = `${profile.line} Ask Dusk, the portfolio's AI, anything about ${profile.name}.`;
+  return {
+    metadataBase: resolveSiteUrl(),
+    title,
+    description,
+    alternates: { canonical: "/" },
+    authors: [{ name: profile.name, url: profile.links.github }],
+    openGraph: { type: "website", url: "/", siteName: profile.name, title, description },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export const viewport: Viewport = {
-  themeColor: "#110b10",
+  themeColor: PALETTE.bg,
   colorScheme: "dark",
   viewportFit: "cover",
 };
