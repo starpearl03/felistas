@@ -83,20 +83,28 @@ export async function handleContact(
     return fail(400, "invalid", { fields });
   }
 
-  const trap = checkTraps(parsed.data, deps.now());
+  const trap = checkTraps(parsed.data);
   // A filled honeypot looks like success to the bot, and nothing is sent
   if (trap === "honeypot") {
     deps.log("honeypot");
     return json(200, { ok: true });
   }
   if (trap === "too-fast") return fail(422, "too_fast");
-  if (trap === "stale")
-    return fail(400, "invalid", { fields: { renderedAt: "The form expired." } });
+  if (trap === "stale") return fail(400, "invalid", { fields: { elapsedMs: "The form expired." } });
 
-  const config = deps.config();
+  let config: MailConfig | null;
+  try {
+    config = deps.config();
+  } catch (err) {
+    // a malformed variable is a setup problem: answer in the same JSON shape and log it
+    deps.log("bad mail config", { reason: (err as Error).message });
+    config = null;
+  }
   if (!config) return fail(503, "not_configured");
 
-  const limit = deps.limiter.hit(clientIp(request.headers), deps.now());
+  const ip = clientIp(request.headers);
+  const now = deps.now();
+  const limit = deps.limiter.hit(ip, now);
   if (!limit.ok) {
     const retryAfter = Math.ceil(limit.retryAfterMs / 1_000);
     return fail(429, "rate_limited", { retryAfter }, { "Retry-After": String(retryAfter) });
@@ -104,6 +112,8 @@ export async function handleContact(
 
   const result = await deps.mailer(parsed.data, config);
   if (!result.ok) {
+    // nothing was sent, so the attempt does not count against the visitor
+    deps.limiter.refund(ip, now);
     deps.log("send failed", { reason: result.reason });
     return fail(502, "send_failed");
   }

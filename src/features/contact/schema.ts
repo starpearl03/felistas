@@ -4,7 +4,7 @@ import { z } from "zod";
 
 /** A real person takes at least this long between seeing the letter and sending it. */
 export const MIN_FILL_MS = 3_000;
-/** A form older than this is stale (or a replayed request). */
+/** A form open longer than this is stale (or a replayed request). */
 export const MAX_FORM_AGE_MS = 24 * 60 * 60 * 1_000;
 export const MAX_MESSAGE_LENGTH = 2_000;
 
@@ -31,8 +31,11 @@ export const contactSchema = z.strictObject({
     .max(MAX_MESSAGE_LENGTH, `Keep the message under ${MAX_MESSAGE_LENGTH} characters.`),
   /** Honeypot: a field people never see. Bots fill it in. */
   website: z.string().max(200).default(""),
-  /** When the form was shown (ms since epoch), for the time trap */
-  renderedAt: z.number().int().nonnegative(),
+  /**
+   * How long the form was open, in ms, measured by the browser with performance.now(). A duration,
+   * not a timestamp, so the visitor's clock being wrong cannot trip the time trap.
+   */
+  elapsedMs: z.number().int().nonnegative(),
 });
 
 export type ContactInput = z.input<typeof contactSchema>;
@@ -41,11 +44,10 @@ export type ContactMessage = z.output<typeof contactSchema>;
 export type TrapResult = "ok" | "honeypot" | "too-fast" | "stale";
 
 /** Spam checks that run after validation. */
-export function checkTraps(msg: ContactMessage, now: number): TrapResult {
+export function checkTraps(msg: ContactMessage): TrapResult {
   if (msg.website.trim() !== "") return "honeypot";
-  const age = now - msg.renderedAt;
-  if (age < MIN_FILL_MS) return "too-fast";
-  if (age > MAX_FORM_AGE_MS) return "stale";
+  if (msg.elapsedMs < MIN_FILL_MS) return "too-fast";
+  if (msg.elapsedMs > MAX_FORM_AGE_MS) return "stale";
   return "ok";
 }
 

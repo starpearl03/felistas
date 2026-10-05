@@ -9,6 +9,8 @@ export type RateResult = { ok: true } | { ok: false; retryAfterMs: number };
 export type RateLimiter = {
   /** Records a hit for `key` and says whether it is allowed under every window. */
   hit(key: string, now?: number): RateResult;
+  /** Removes a hit recorded at `at`, for an attempt that did not go through. */
+  refund(key: string, at: number): void;
   reset(): void;
 };
 
@@ -34,6 +36,12 @@ export function createRateLimiter(windows: Window[]): RateLimiter {
       // forget the least recently used keys so memory stays bounded
       if (hits.size > MAX_KEYS) hits.delete(hits.keys().next().value as string);
       return { ok: true };
+    },
+    refund(key, at) {
+      const recent = hits.get(key);
+      if (!recent) return;
+      const i = recent.lastIndexOf(at);
+      if (i !== -1) recent.splice(i, 1);
     },
     reset() {
       hits.clear();

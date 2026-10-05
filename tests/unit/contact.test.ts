@@ -19,7 +19,7 @@ const valid = {
   topic: "a senior backend role",
   message: "Hi Felistas, I'd like to talk.",
   website: "",
-  renderedAt: NOW - 10_000,
+  elapsedMs: 10_000,
 };
 
 const config = {
@@ -62,7 +62,7 @@ describe("contactSchema", () => {
   });
 
   it("explains missing fields in plain words", () => {
-    const res = contactSchema.safeParse({ renderedAt: 0 });
+    const res = contactSchema.safeParse({ elapsedMs: 5_000 });
     const messages = res.success ? [] : res.error.issues.map((i) => i.message);
     expect(messages).toContain("Write a short message.");
     expect(messages.some((m) => m.startsWith("Add an email address"))).toBe(true);
@@ -76,13 +76,13 @@ describe("contactSchema", () => {
 
 describe("checkTraps", () => {
   const msg = contactSchema.parse(valid);
-  it("passes a person who took a few seconds", () => expect(checkTraps(msg, NOW)).toBe("ok"));
+  it("passes a person who took a few seconds", () => expect(checkTraps(msg)).toBe("ok"));
   it("catches a filled honeypot", () =>
-    expect(checkTraps({ ...msg, website: "http://spam" }, NOW)).toBe("honeypot"));
+    expect(checkTraps({ ...msg, website: "http://spam" })).toBe("honeypot"));
   it("catches instant submissions", () =>
-    expect(checkTraps({ ...msg, renderedAt: NOW - MIN_FILL_MS + 1 }, NOW)).toBe("too-fast"));
+    expect(checkTraps({ ...msg, elapsedMs: MIN_FILL_MS - 1 })).toBe("too-fast"));
   it("catches stale forms", () =>
-    expect(checkTraps({ ...msg, renderedAt: NOW - 2 * 86_400_000 }, NOW)).toBe("stale"));
+    expect(checkTraps({ ...msg, elapsedMs: 2 * 86_400_000 })).toBe("stale"));
 });
 
 describe("buildContactEmail", () => {
@@ -120,6 +120,14 @@ describe("createRateLimiter", () => {
     expect(third).toEqual({ ok: false, retryAfterMs: 800 });
     expect(rl.hit("b", 200).ok).toBe(true);
     expect(rl.hit("a", 1_001).ok).toBe(true);
+  });
+
+  it("refunds a hit that did not go through", () => {
+    const rl = createRateLimiter([{ limit: 1, windowMs: 1_000 }]);
+    expect(rl.hit("a", 0).ok).toBe(true);
+    rl.refund("a", 0);
+    expect(rl.hit("a", 10).ok).toBe(true);
+    expect(rl.hit("a", 20).ok).toBe(false);
   });
 
   it("enforces every window", () => {
@@ -172,7 +180,7 @@ describe("POST /api/contact", () => {
   });
 
   it("rejects instant submissions", async () => {
-    const res = await handleContact(post({ ...valid, renderedAt: NOW - 500 }), deps());
+    const res = await handleContact(post({ ...valid, elapsedMs: 500 }), deps());
     expect(res.status).toBe(422);
     expect((await res.json()).error).toBe("too_fast");
   });
@@ -192,6 +200,26 @@ describe("POST /api/contact", () => {
     expect(res.status).toBe(429);
     expect(res.headers.get("Retry-After")).toBe("600");
     expect((await handleContact(post(valid, "198.51.100.1"), d)).status).toBe(200);
+  });
+
+  it("answers a malformed mail config with a typed 503 and logs it", async () => {
+    const d = deps({
+      config: () => {
+        throw new Error("Invalid environment variables: CONTACT_TO_EMAIL");
+      },
+    });
+    const res = await handleContact(post(valid), d);
+    expect(res.status).toBe(503);
+    expect((await res.json()).error).toBe("not_configured");
+    expect(d.log).toHaveBeenCalledWith("bad mail config", expect.anything());
+  });
+
+  it("does not count failed sends against the visitor", async () => {
+    const mailer = vi.fn(async () => ({ ok: false as const, reason: "outage" }));
+    const d = deps({ mailer });
+    for (let i = 0; i < 5; i++) expect((await handleContact(post(valid), d)).status).toBe(502);
+    mailer.mockResolvedValue({ ok: true, id: "email_2" } as never);
+    expect((await handleContact(post(valid), d)).status).toBe(200);
   });
 
   it("reports a failed send without leaking the reason", async () => {
