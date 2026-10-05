@@ -29,17 +29,17 @@ Tone: calm, cinematic, precise. It should impress developers but never blind or 
 
 ### Colour (single dark theme by design; there is no light mode)
 
-| Token | Value | Use |
-|---|---|---|
-| `--bg` | `#110b10` (rgb 17,11,16) | Page ground; also used for text shadows and scrims |
-| `--fg` | `#f1e7ec` | Primary text |
-| `--fg2` | `#cdb9c3` | Body text |
-| `--muted` | `#9a8490` | Labels, meta, placeholders |
-| `--line` | `rgba(226,166,182,.16)` | Hairlines (only thin rules, never boxes) |
-| `--acc` | `#e2a6b6` | Dusty rose accent: links, dots, highlights, the send button |
-| `--acc2` | `#fbe3ea` | Brightest highlight (glyph light, the "now" edge) |
-| `--ink` | `#24101a` | Text on accent backgrounds |
-| `--soft` | `rgba(226,166,182,.11)` | Hover washes, status rings |
+| Token     | Value                    | Use                                                         |
+| --------- | ------------------------ | ----------------------------------------------------------- |
+| `--bg`    | `#110b10` (rgb 17,11,16) | Page ground; also used for text shadows and scrims          |
+| `--fg`    | `#f1e7ec`                | Primary text                                                |
+| `--fg2`   | `#cdb9c3`                | Body text                                                   |
+| `--muted` | `#9a8490`                | Labels, meta, placeholders                                  |
+| `--line`  | `rgba(226,166,182,.16)`  | Hairlines (only thin rules, never boxes)                    |
+| `--acc`   | `#e2a6b6`                | Dusty rose accent: links, dots, highlights, the send button |
+| `--acc2`  | `#fbe3ea`                | Brightest highlight (glyph light, the "now" edge)           |
+| `--ink`   | `#24101a`                | Text on accent backgrounds                                  |
+| `--soft`  | `rgba(226,166,182,.11)`  | Hover washes, status rings                                  |
 
 Canvas palettes (RGB):
 
@@ -50,11 +50,11 @@ Canvas palettes (RGB):
 
 ### Typography
 
-| Role | Family | Notes |
-|---|---|---|
-| Display / voice | **Instrument Serif** (400, normal + italic) | Section headings, the AI's messages, big numbers, the contact letter |
-| UI / body | **Geist** (300, 400, 500) | Body copy, nav, chips |
-| Utility / data | **Geist Mono** (400, 500) | Eyebrows, labels, meta, the glyph field and sphere |
+| Role               | Family                                                                                                        | Notes                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Display / voice    | **Instrument Serif** (400, normal + italic)                                                                   | Section headings, the AI's messages, big numbers, the contact letter                    |
+| UI / body          | **Geist** (300, 400, 500)                                                                                     | Body copy, nav, chips                                                                   |
+| Utility / data     | **Geist Mono** (400, 500)                                                                                     | Eyebrows, labels, meta, the glyph field and sphere                                      |
 | Glyph-mask display | **Big Shoulders** at weight 900 (the prototype uses "Big Shoulders Display", now merged into "Big Shoulders") | Only used to rasterise words into the glyph field, plus the outlined years in Education |
 
 Scale (from the prototype):
@@ -121,19 +121,18 @@ The prototype implements this as `class Sphere`.
   - When R < 40 (the mobile dock), draw small squares instead of glyphs.
 - **Halo.** A radial accent glow from 0.2R to 1.7R, with alpha `.08 + speak × .07`.
 - **States** (driven by the chat):
-  - *thinking*: the radius shrinks 15%, the sphere spins faster, and an accent arc (1.3 rad long) orbits at 1.22R + 4.
-  - *speaking*: a ripple runs through the points, `radius × (1 + speak × .05 × sin(y × 7 + t × .008))`.
+  - _thinking_: the radius shrinks 15%, the sphere spins faster, and an accent arc (1.3 rad long) orbits at 1.22R + 4.
+  - _speaking_: a ripple runs through the points, `radius × (1 + speak × .05 × sin(y × 7 + t × .008))`.
 - **Shapes per section ("dispatch and combine").** Whenever the current section changes, every point gets a new target. The points burst outward and then recombine into the new form:
 
-  | Section | Shape |
-  |---|---|
-  | home | sphere |
-  | about | torus |
-  | projects | cube surface |
-  | experience | double helix |
-  | education | three flat rings |
-  | contact | sphere |
-
+  | Section    | Shape            |
+  | ---------- | ---------------- |
+  | home       | sphere           |
+  | about      | torus            |
+  | projects   | cube surface     |
+  | experience | double helix     |
+  | education  | three flat rings |
+  | contact    | sphere           |
   - Each point eases toward its target at its own speed (0.025–0.075 per frame).
   - `burst` starts at 1 and decays ×0.972 per frame. The outward push is `1 + sin(π(1 − burst)) × j × .85`, where `j` is a per-point random value in .5–1.6. Alpha dips by up to 35% during the burst.
   - The shape name shows under the companion's name as `form · helix` (mono, 10px, accent).
@@ -192,14 +191,14 @@ The column contains, top to bottom:
 
 Message styles:
 
-| Type | Style |
-|---|---|
-| AI | Instrument Serif 20px, revealed word by word every 28 ms, with a bg-coloured text shadow for legibility over glyphs |
-| Visitor | Right-aligned bubble with `rgba(acc,.13)` fill and radius `16 16 5 16` |
-| Tool call | A small mono line: a round `ƒ` badge, `navigate("projects")`, then `done` in accent. Show this for every function call, because it makes the AI feel like a real agent |
-| Typing | Three pulsing dots, shown during the think delay |
-| Resume card | Accent left rule; a PDF icon; `felistas-resume.pdf · 2 pages · 148 KB · <date>`; a "Download" text link |
-| Draft card | Accent left rule; To / Reply to / Message rows; Send · Edit · Cancel text links |
+| Type        | Style                                                                                                                                                                  |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI          | Instrument Serif 20px, revealed word by word every 28 ms, with a bg-coloured text shadow for legibility over glyphs                                                    |
+| Visitor     | Right-aligned bubble with `rgba(acc,.13)` fill and radius `16 16 5 16`                                                                                                 |
+| Tool call   | A small mono line: a round `ƒ` badge, `navigate("projects")`, then `done` in accent. Show this for every function call, because it makes the AI feel like a real agent |
+| Typing      | Three pulsing dots, shown during the think delay                                                                                                                       |
+| Resume card | Accent left rule; a PDF icon; `felistas-resume.pdf · 2 pages · 148 KB · <date>`; a "Download" text link                                                                |
+| Draft card  | Accent left rule; To / Reply to / Message rows; Send · Edit · Cancel text links                                                                                        |
 
 **Greeting:** "Hello. I'm Dusk, and I keep the record of Felistas, a software engineer. Who's visiting today?"
 
@@ -213,15 +212,15 @@ The model must answer **only from the record**: a short core card plus the chunk
 
 Tools (function declarations):
 
-| Tool | Args | Effect (executed on the client unless noted) |
-|---|---|---|
-| `navigate` | `section: home\|about\|projects\|experience\|education\|contact` | Scroll to the section (this triggers the shape change and the heading flight) |
-| `open_project` | `id` | Navigate to Projects and select that project (detail panel plus glyph flash) |
-| `open_role` | `org` | Navigate to Experience and select that role |
-| `download_resume` | — | Show the resume card and start the download of `/resume/felistas-resume.pdf` |
-| `draft_message` | `reply_to` (email), `name?`, `message` | Show the draft card. **Never send automatically.** |
-| `set_motion` | `level: still\|calm\|lively` | Change the motion level |
-| `search_record` | `query` | **Server-side:** run retrieval again for follow-up or multi-part questions |
+| Tool              | Args                                                             | Effect (executed on the client unless noted)                                  |
+| ----------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `navigate`        | `section: home\|about\|projects\|experience\|education\|contact` | Scroll to the section (this triggers the shape change and the heading flight) |
+| `open_project`    | `id`                                                             | Navigate to Projects and select that project (detail panel plus glyph flash)  |
+| `open_role`       | `org`                                                            | Navigate to Experience and select that role                                   |
+| `download_resume` | —                                                                | Show the resume card and start the download of `/resume/felistas-resume.pdf`  |
+| `draft_message`   | `reply_to` (email), `name?`, `message`                           | Show the draft card. **Never send automatically.**                            |
+| `set_motion`      | `level: still\|calm\|lively`                                     | Change the motion level                                                       |
+| `search_record`   | `query`                                                          | **Server-side:** run retrieval again for follow-up or multi-part questions    |
 
 Answers cite the retrieved chunks they used. The UI shows them as small source chips (for example "Projects · Ledgerline") that navigate to the source when clicked.
 
@@ -246,11 +245,11 @@ Conversation flows the prototype covers, which production must keep:
 
 These are visitor-selectable and remembered in `localStorage` under `dusk-motion`. **The default is Lively**; visitors with `prefers-reduced-motion: reduce` start on Still.
 
-| Level | Glyph change rate (share of cells per 45 ms) | Field brightness | Cursor light | Sphere spin |
-|---|---|---|---|---|
-| still | 0 | .80 | .32 | .4× |
-| calm | .020 | .95 | .45 | 1× |
-| lively | .045 | 1.10 | .58 | 1.7× |
+| Level  | Glyph change rate (share of cells per 45 ms) | Field brightness | Cursor light | Sphere spin |
+| ------ | -------------------------------------------- | ---------------- | ------------ | ----------- |
+| still  | 0                                            | .80              | .32          | .4×         |
+| calm   | .020                                         | .95              | .45          | 1×          |
+| lively | .045                                         | 1.10             | .58          | 1.7×        |
 
 Still also turns off the heading flight, the shape bursts and the decoding effects. Reduced motion additionally disables CSS animations and smooth scrolling, and redraws canvases only on scroll or pointer events.
 
@@ -290,7 +289,7 @@ Every section has an eyebrow (`Section / detail` in mono, accent first word), ma
 5. **Education**
    - Rows of huge outlined years (Big Shoulders 900, 1px rose stroke, which fills with accent on hover) next to the title (serif), the institution (mono, accent) and a note.
 6. **Contact**
-   - Heading "Let's build *something calm.*" (`data-fly`).
+   - Heading "Let's build _something calm._" (`data-fly`).
    - **The letter:** an inline fill-in sentence set in serif 26–44px with underlined italic accent inputs: "Hi Felistas, I'm [name] from [company]. I'd like to talk about [topic]. You can reach me at [email]."
    - "Hand it to Dusk" validates the email (an inline error message if invalid) and opens the chat with the draft card ready to Send.
    - Then a row with the email (copy action), GitHub and LinkedIn, and a footer line.
