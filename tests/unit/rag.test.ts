@@ -167,6 +167,9 @@ describe("the offline agent's fallback", () => {
     const mentor = respondOffline("Did they mentor anyone?", null, rec, lookup);
     expect(mentor.text).toContain("Mentored three junior engineers.");
 
+    const hosting = respondOffline("Which hosts did they deploy on?", null, rec, lookup);
+    expect(hosting.text).toMatch(/AWS (and|or) Fly.io/);
+
     const none = respondOffline("What is their favourite colour?", null, rec, lookup);
     expect(none.text).toMatch(/isn't in the record/);
   });

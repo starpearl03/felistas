@@ -269,9 +269,11 @@ export function respondOffline(
  */
 function quote(chunk: Chunk, question: string): string {
   const text = chunk.kind === "faq" ? chunk.text.replace(/^[^?]*\?\s*/, "") : chunk.text;
-  const sentences = (text.replace(/\s+/g, " ").match(/[^.!?]+[.!?]+(?=\s|$)/g) ?? [text]).map((t) =>
-    t.trim(),
-  );
+  // A stop only ends a sentence before a space, so "Fly.io" and "Next.js" stay whole
+  const sentences = text
+    .trim()
+    .split(/(?<=[.!?])\s+/)
+    .filter(Boolean);
   const terms = queryGroups(question);
   const score = (sentence: string) => {
     const words = new Set(tokenize(sentence));
