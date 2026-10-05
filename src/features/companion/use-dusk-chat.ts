@@ -1,0 +1,75 @@
+"use client";
+
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls } from "ai";
+import { useEffect, useMemo, useRef } from "react";
+import type { DuskUIMessage, PageContext } from "@/features/agent";
+import { stageStore, useStage } from "@/features/stage";
+import { type CompanionConfig, greetingMessage } from "./config";
+import { runTool } from "./run-tool";
+
+const pageContext = (): PageContext => {
+  const { section, projectId, roleSlug } = stageStore.get();
+  return { section, projectId, roleSlug };
+};
+
+/** The Dusk conversation: useChat wired to the page context and the command bus. */
+export function useDuskChat(config: CompanionConfig) {
+  const configRef = useRef(config);
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport<DuskUIMessage>({
+        api: "/api/chat",
+        body: () => ({ pageContext: pageContext() }),
+      }),
+    [],
+  );
+
+  const chat = useChat<DuskUIMessage>({
+    messages: [greetingMessage(config)],
+    transport,
+    // Only a live model continues after its tools run; the offline agent answers in one message
+    sendAutomaticallyWhen: ({ messages }) =>
+      messages.at(-1)?.metadata?.mode === "live" &&
+      lastAssistantMessageIsCompleteWithToolCalls({ messages }),
+    onToolCall: ({ toolCall }) => {
+      if (toolCall.dynamic) return;
+      const output = runTool(toolCall.toolName, toolCall.input, configRef.current);
+      // no await: adding the output inside the callback must not block the stream
+      void addOutputRef.current?.({
+        tool: toolCall.toolName,
+        toolCallId: toolCall.toolCallId,
+        output,
+      });
+    },
+  });
+
+  const addOutputRef = useRef(chat.addToolOutput);
+  useEffect(() => {
+    addOutputRef.current = chat.addToolOutput;
+  }, [chat.addToolOutput]);
+
+  // Questions asked from elsewhere on the page ("Ask Dusk about Atlas")
+  const ask = useStage((s) => s.ask);
+  const handledAsk = useRef(0);
+  const { sendMessage, status } = chat;
+  useEffect(() => {
+    if (!ask || ask.id === handledAsk.current || status === "submitted" || status === "streaming") {
+      return;
+    }
+    handledAsk.current = ask.id;
+    void sendMessage({ text: ask.text });
+  }, [ask, sendMessage, status]);
+
+  const reset = () => {
+    chat.stop();
+    chat.setMessages([greetingMessage(configRef.current)]);
+    chat.clearError();
+  };
+
+  return { ...chat, reset };
+}
