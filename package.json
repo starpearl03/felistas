@@ -17,10 +17,15 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "check": "npm run lint && npm run typecheck",
-    "verify": "npm run lint && npm run typecheck && npm run format:check && npm run test && npm run build",
-    "prepare": "node scripts/install-hooks.mjs"
+    "verify": "npm run lint && npm run typecheck && npm run format:check && npm run test && npm run rag:gate && npm run build",
+    "prepare": "node scripts/install-hooks.mjs",
+    "rag:index": "tsx --conditions=react-server scripts/build-rag-index.ts",
+    "prebuild": "npm run rag:index",
+    "rag:eval": "tsx --conditions=react-server scripts/rag-eval.ts",
+    "rag:gate": "npm run rag:eval -- --bm25 --min-recall=0.9"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.88",
     "@ai-sdk/react": "^4.0.130",
     "@google/genai": "^2.27.0",
     "ai": "^7.0.127",
@@ -47,6 +52,7 @@
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.3"
   }
