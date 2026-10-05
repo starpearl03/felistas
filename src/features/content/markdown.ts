@@ -11,13 +11,22 @@ export function splitFrontmatter(source: string): Frontmatter {
   return { data: parse(match[1] ?? "") ?? {}, body: text.slice(match[0].length).trim() };
 }
 
-/** Body paragraphs separated by blank lines, with headings dropped. */
+/** A Markdown ATX heading line: one to six `#` followed by a space. "#1 priority" is not a heading. */
+const HEADING_LINE = /^#{1,6}\s/;
+
+/** Body paragraphs separated by blank lines. Heading lines are removed; the text around them is kept. */
 export function paragraphs(body: string): string[] {
   return body
     .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter((p) => p.length > 0 && !p.startsWith("#"))
-    .map((p) => p.replace(/\s*\n\s*/g, " "));
+    .map((block) =>
+      block
+        .split("\n")
+        .filter((line) => !HEADING_LINE.test(line.trim()))
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .join(" "),
+    )
+    .filter((p) => p.length > 0);
 }
 
 export type MarkdownSection = { heading: string; text: string };

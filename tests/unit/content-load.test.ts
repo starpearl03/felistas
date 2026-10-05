@@ -1,4 +1,4 @@
-import { cp, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -91,7 +91,27 @@ describe("validation errors name the file", () => {
       "experience/second-current.md",
       "---\nrole: R\norg: O\nperiod: P\nstart: 2025\nend: 2026\ncurrent: true\npoints: [x]\n---\n",
     );
-    await expect(loadSiteFrom(dir)).rejects.toThrow(/only one role can be current/);
+    await expect(loadSiteFrom(dir)).rejects.toThrow(
+      /exactly one role must have current: true, found 2/,
+    );
+  });
+
+  it("rejects content with no current role", async () => {
+    const rel = "experience/northwind-labs.md";
+    const text = await readFile(path.join(dir, rel), "utf8");
+    await write(rel, text.replace(/^current: true\n/m, ""));
+    await expect(loadSiteFrom(dir)).rejects.toThrow(/found 0/);
+  });
+
+  it("reports the real cause when a path exists but cannot be read as a file", async () => {
+    await rm(path.join(dir, "faq.md"));
+    await mkdir(path.join(dir, "faq.md"));
+    await expect(loadSiteFrom(dir)).rejects.toThrow(/content\/faq\.md: could not read file/);
+  });
+
+  it("reports a missing file as not found", async () => {
+    await rm(path.join(dir, "skills.md"));
+    await expect(loadSiteFrom(dir)).rejects.toThrow(/content\/skills\.md: file not found/);
   });
 
   it("clears the sample flag once no file carries it", async () => {

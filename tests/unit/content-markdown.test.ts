@@ -28,6 +28,16 @@ describe("paragraphs", () => {
   it("joins wrapped lines and drops headings", () => {
     expect(paragraphs("## Title\n\nOne\nline.\n\n\nTwo.")).toEqual(["One line.", "Two."]);
   });
+
+  it("keeps text that sits directly under a heading", () => {
+    expect(paragraphs("# About\nFelistas builds systems.\n### Sub\nMore text.")).toEqual([
+      "Felistas builds systems. More text.",
+    ]);
+  });
+
+  it("keeps lines that start with # but are not headings", () => {
+    expect(paragraphs("#1 priority is reliability.")).toEqual(["#1 priority is reliability."]);
+  });
 });
 
 describe("sectionsByHeading", () => {

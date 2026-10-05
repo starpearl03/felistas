@@ -28,6 +28,13 @@ export class ContentError extends Error {
   }
 }
 
+/** "not found" only for a missing path; any other read error keeps its real cause. */
+function readFailure(err: unknown, kind: "file" | "folder"): string {
+  const code = (err as NodeJS.ErrnoException).code;
+  if (code === "ENOENT") return `${kind} not found`;
+  return `could not read ${kind}: ${(err as Error).message}`;
+}
+
 type Parsed<S extends z.ZodType> = { data: z.output<S>; body: string; slug: string };
 
 async function readEntry<S extends z.ZodType>(
@@ -39,8 +46,8 @@ async function readEntry<S extends z.ZodType>(
   let source: string;
   try {
     source = await readFile(path.join(root, rel), "utf8");
-  } catch {
-    throw new ContentError(file, "file not found");
+  } catch (err) {
+    throw new ContentError(file, readFailure(err, "file"));
   }
   let fm;
   try {
@@ -63,8 +70,8 @@ async function readFolder<S extends z.ZodType>(root: string, dir: string, schema
   let names: string[];
   try {
     names = (await readdir(path.join(root, dir))).filter((n) => n.endsWith(".md"));
-  } catch {
-    throw new ContentError(dir, "folder not found");
+  } catch (err) {
+    throw new ContentError(dir, readFailure(err, "folder"));
   }
   return Promise.all(
     names.sort().map(async (name) => {
@@ -95,8 +102,12 @@ export async function loadSiteFrom(root: string): Promise<Site> {
   ]);
 
   const current = roles.filter((r) => r.data.current);
-  if (current.length > 1) {
-    throw new ContentError("experience", `only one role can be current, found ${current.length}`);
+  // The Experience ruler and the agent rely on exactly one current role
+  if (current.length !== 1) {
+    throw new ContentError(
+      "experience",
+      `exactly one role must have current: true, found ${current.length}`,
+    );
   }
 
   const all = [profile, skills, faq, ...projects, ...roles, ...education];
