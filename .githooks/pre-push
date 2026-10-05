@@ -1,0 +1,12 @@
+#!/bin/sh
+# Refuse any push that targets main (including deleting it). Every change reaches main through a squash-merged PR.
+# stdin lines: <local ref> <local sha> <remote ref> <remote sha>
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "pre-push: pushing to main is not allowed. Open a PR from a branch instead." >&2
+    exit 1
+  fi
+done
+
+exit 0
