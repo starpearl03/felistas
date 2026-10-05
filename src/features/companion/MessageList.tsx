@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { DuskUIMessage, ToolName, ToolResult } from "@/features/agent";
+import type { AnyToolName, DuskUIMessage } from "@/features/agent";
 import { useStage } from "@/features/stage";
 import type { CompanionConfig } from "./config";
 import { ResumeCard } from "./parts/ResumeCard";
 import { RevealText } from "./parts/RevealText";
+import { SourceChips } from "./parts/SourceChips";
 import { ToolLine } from "./parts/ToolLine";
 
 type MessageListProps = {
@@ -14,6 +15,8 @@ type MessageListProps = {
   config: CompanionConfig;
   /** id of the reply being spoken; it reveals word by word */
   speakingId: string | null;
+  /** The spoken reply is still streaming or revealing; its sources wait until it settles */
+  settling: boolean;
   onRevealingChange: (revealing: boolean) => void;
 };
 
@@ -24,6 +27,7 @@ export function MessageList({
   thinking,
   config,
   speakingId,
+  settling,
   onRevealingChange,
 }: MessageListProps) {
   const log = useRef<HTMLDivElement>(null);
@@ -57,6 +61,7 @@ export function MessageList({
             message={m}
             config={config}
             animate={m.id === speakingId && !still}
+            settled={!(m.id === speakingId && settling)}
             onRevealingChange={m.id === speakingId ? onRevealingChange : undefined}
           />
         ),
@@ -84,23 +89,30 @@ function AssistantMessage({
   message,
   config,
   animate,
+  settled,
   onRevealingChange,
 }: {
   message: DuskUIMessage;
   config: CompanionConfig;
   animate: boolean;
+  settled: boolean;
   onRevealingChange?: (revealing: boolean) => void;
 }) {
-  const tools: { id: string; name: ToolName; input: unknown; ok?: boolean }[] = [];
+  const tools: { id: string; name: AnyToolName; input: unknown; ok?: boolean }[] = [];
   const texts: string[] = [];
   for (const part of message.parts) {
     if (part.type === "text") texts.push(part.text);
     else if (part.type.startsWith(TOOL_PREFIX) && "toolCallId" in part) {
       tools.push({
         id: part.toolCallId,
-        name: part.type.slice(TOOL_PREFIX.length) as ToolName,
+        name: part.type.slice(TOOL_PREFIX.length) as AnyToolName,
         input: part.input,
-        ok: part.state === "output-available" ? (part.output as ToolResult).ok : undefined,
+        ok:
+          part.state === "output-available"
+            ? ((part.output as { ok?: boolean }).ok ?? true)
+            : part.state === "output-error"
+              ? false
+              : undefined,
       });
     }
   }
@@ -115,6 +127,9 @@ function AssistantMessage({
         <RevealText text={texts.join("")} animate={animate} onRevealingChange={onRevealingChange} />
       ) : null}
       {resume ? <ResumeCard resume={config.resume} /> : null}
+      {settled && message.metadata?.sources?.length ? (
+        <SourceChips sources={message.metadata.sources} config={config} />
+      ) : null}
     </div>
   );
 }

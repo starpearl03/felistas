@@ -1,14 +1,17 @@
-import type { ToolName } from "@/features/agent";
+import type { AnyToolName } from "@/features/agent";
 
 type ToolLineProps = {
-  name: ToolName;
+  name: AnyToolName;
   input: unknown;
   /** Undefined while the tool is still running */
   ok?: boolean;
 };
 
+/** A search query is cut short, so the line stays one line */
+const QUERY_CHARS = 32;
+
 /** The short argument shown in the line, e.g. navigate("projects"). Never the visitor's message. */
-function argument(name: ToolName, input: unknown): string {
+function argument(name: AnyToolName, input: unknown): string {
   const i = (input ?? {}) as Record<string, unknown>;
   const value =
     name === "navigate"
@@ -21,7 +24,11 @@ function argument(name: ToolName, input: unknown): string {
             ? i.level
             : name === "draft_message"
               ? i.reply_to
-              : undefined;
+              : name === "search_record" && typeof i.query === "string"
+                ? i.query.length > QUERY_CHARS
+                  ? `${i.query.slice(0, QUERY_CHARS - 1)}…`
+                  : i.query
+                : undefined;
   return typeof value === "string" ? `"${value}"` : "";
 }
 

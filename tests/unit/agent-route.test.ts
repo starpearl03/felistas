@@ -25,6 +25,7 @@ const deps = (): ChatDeps => ({
   limiter: createRateLimiter([{ limit: 2, windowMs: 60_000 }]),
   record: async () => record,
   index: async () => index,
+  live: () => null,
   now: () => 1_000,
 });
 

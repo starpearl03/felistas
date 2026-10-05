@@ -38,7 +38,7 @@ cp .env.example .env.local   # then fill in the keys
 npm run dev                  # http://localhost:3000
 ```
 
-The site works without keys. Without `GEMINI_API_KEY`, Dusk falls back to a local keyword matcher, and without Resend keys the contact form reports that sending is unavailable.
+The site works without keys. Without `GEMINI_API_KEY`, Dusk falls back to a local keyword matcher, and without Resend keys the contact form reports that sending is unavailable. With a key, Dusk also answers offline whenever Gemini fails or rate-limits (it then rests for a minute), and once the site's own budget of 8 answers a minute or 200 a day is spent, so the free tier is never exceeded.
 
 ### Environment variables
 

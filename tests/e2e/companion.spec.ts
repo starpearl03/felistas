@@ -159,6 +159,46 @@ test("the intro resume link is a plain download, not a chat request", async ({ p
   await expect(link).toHaveAttribute("download", "felistas-resume.pdf");
 });
 
+test("a live answer shows its sources, and a source opens where it lives", async ({ page }) => {
+  // A live (Gemini) reply as the server streams it; CI has no key, so the route is mocked
+  const chunks = [
+    { type: "start", messageMetadata: { mode: "live" } },
+    { type: "text-start", id: "t" },
+    { type: "text-delta", id: "t", delta: "Pulse streams service health to on-call engineers." },
+    { type: "text-end", id: "t" },
+    {
+      type: "finish",
+      messageMetadata: {
+        mode: "live",
+        flow: null,
+        sources: [
+          {
+            id: "project:pulse:card",
+            title: "Projects · Pulse",
+            section: "projects",
+            entityId: "pulse",
+          },
+        ],
+      },
+    },
+  ];
+  await page.route("**/api/chat", (route) =>
+    route.fulfill({
+      headers: { "content-type": "text/event-stream", "x-vercel-ai-ui-message-stream": "v1" },
+      body: [...chunks.map((c) => JSON.stringify(c)), "[DONE]"]
+        .map((line) => `data: ${line}\n\n`)
+        .join(""),
+    }),
+  );
+
+  await ask(page, "What does Pulse do?");
+  const convo = await conversation(page);
+  await expect(convo).toContainText("Pulse streams service health");
+  await convo.getByRole("button", { name: /Projects · Pulse/ }).click();
+  await expect(stage(page)).toHaveAttribute("data-section", "projects");
+  await expect(page.locator("#project-detail")).toContainText("Pulse");
+});
+
 test.describe("on phones", () => {
   test.skip(({ isMobile }) => !isMobile, "the bottom sheet is phone-only");
 

@@ -1,6 +1,6 @@
 // Runs Dusk's tool calls on the command bus, exactly as the matching clicks would (UI-SPEC §6.1).
 // Inputs are validated first: a model can ask for anything, and only real ids get through.
-import { type ToolName, type ToolResult, toolInputSchemas } from "@/features/agent";
+import { type AnyToolName, type ToolResult, toolInputSchemas } from "@/features/agent";
 import {
   closeChat,
   downloadResume,
@@ -14,7 +14,12 @@ import type { CompanionConfig } from "./config";
 
 const isPhone = () => window.innerWidth < 900;
 
-export function runTool(name: ToolName, input: unknown, config: CompanionConfig): ToolResult {
+/** Runs a page tool; the server-only search returns null. */
+export function runTool(
+  name: AnyToolName,
+  input: unknown,
+  config: CompanionConfig,
+): ToolResult | null {
   const schemas = toolInputSchemas(config.ids);
   // Moving the page closes the phone sheet so the visitor sees where Dusk went
   const reveal = () => {
@@ -59,5 +64,7 @@ export function runTool(name: ToolName, input: unknown, config: CompanionConfig)
       setMotion(p.data.level);
       return { ok: true };
     }
+    case "search_record":
+      return null;
   }
 }

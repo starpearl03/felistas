@@ -1,6 +1,6 @@
 import type { UIDataTypes, UIMessage } from "ai";
 import type { SectionId } from "@/features/content";
-import type { ToolInputs, ToolName, ToolResult } from "./tools";
+import type { SearchResult, ToolInputs, ToolName, ToolResult } from "./tools";
 
 /** The offline agent's place in the contact flow, carried in message metadata between turns. */
 export type ContactFlow = { step: "email" } | { step: "message"; email: string };
@@ -11,9 +11,23 @@ export type DuskMetadata = {
   /** Suggested replies shown under the message */
   chips?: string[];
   flow?: ContactFlow | null;
+  /** The passages a live answer cited, shown as source chips */
+  sources?: Source[];
 };
 
-type DuskTools = { [K in ToolName]: { input: ToolInputs[K]; output: ToolResult } };
+/** A cited passage of the record, as the client needs it to show and open it. */
+export type Source = {
+  id: string;
+  /** "Projects · Ledgerline" */
+  title: string;
+  section: SectionId;
+  /** The project id or role slug to open, when the passage belongs to one */
+  entityId: string | null;
+};
+
+type DuskTools = { [K in ToolName]: { input: ToolInputs[K]; output: ToolResult } } & {
+  search_record: { input: { query: string }; output: SearchResult };
+};
 
 export type DuskUIMessage = UIMessage<DuskMetadata, UIDataTypes, DuskTools>;
 
