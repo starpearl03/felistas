@@ -53,16 +53,18 @@ The site works without keys. Without `GEMINI_API_KEY`, Dusk falls back to a loca
 
 ### Scripts
 
-| Command                       | Does                                                                |
-| ----------------------------- | ------------------------------------------------------------------- |
-| `npm run dev`                 | Start the dev server                                                |
-| `npm run build` / `npm start` | Production build and serve                                          |
-| `npm run lint`                | ESLint                                                              |
-| `npm run typecheck`           | TypeScript, no emit                                                 |
-| `npm run format`              | Format with Prettier (`format:check` only checks)                   |
-| `npm run test`                | Unit tests (Vitest)                                                 |
-| `npm run test:e2e`            | End-to-end tests (Playwright, desktop and mobile Chromium)          |
-| `npm run verify`              | Lint, typecheck, format check, unit tests and build: the merge gate |
+| Command                       | Does                                                                                |
+| ----------------------------- | ----------------------------------------------------------------------------------- |
+| `npm run dev`                 | Start the dev server                                                                |
+| `npm run build` / `npm start` | Production build and serve                                                          |
+| `npm run lint`                | ESLint                                                                              |
+| `npm run typecheck`           | TypeScript, no emit                                                                 |
+| `npm run format`              | Format with Prettier (`format:check` only checks)                                   |
+| `npm run test`                | Unit tests (Vitest)                                                                 |
+| `npm run test:e2e`            | End-to-end tests (Playwright, desktop and mobile Chromium)                          |
+| `npm run rag:index`           | Build Dusk's retrieval index from `content/` (runs before every build)              |
+| `npm run rag:eval`            | Retrieval quality on `tests/rag/golden.json` (recall@6, MRR)                        |
+| `npm run verify`              | Lint, typecheck, format check, unit tests, retrieval gate and build: the merge gate |
 
 First-time e2e setup: `npx playwright install chromium`.
 
@@ -98,6 +100,8 @@ Everything the site and Dusk say about Felistas comes from `content/`:
 | `faq.md`              | `## Question` headings with answers                                         |
 
 The build validates every file and fails with the file name and field if something is wrong. Remove `sample: true` from each file as real content replaces the placeholders.
+
+Dusk searches the same files. `npm run rag:index` splits them into passages and indexes them: BM25 always, plus Gemini embeddings when `GEMINI_API_KEY` is set (cached in `.cache/`, so a rebuild only embeds changed text). After changing content, add or update questions in `tests/rag/golden.json` and check `npm run rag:eval`; the merge gate requires BM25 recall@6 of at least 0.9.
 
 Target:
 

@@ -2,6 +2,8 @@
 // model is unavailable. Port of `makeAgent` in docs/ui/Felistas Dusk.html, driven by content.
 // Pure (no I/O), so every flow is unit-tested.
 import { z } from "zod";
+import { queryGroups, tokenize } from "./rag/tokenize";
+import type { Chunk } from "./rag/types";
 import type { AgentRecord } from "./record";
 import type { ToolCall } from "./tools";
 import type { ContactFlow } from "./types";
@@ -37,11 +39,18 @@ export function greeting(rec: AgentRecord): string {
   return `Hello. I'm Dusk, and I keep the record of ${rec.name}, a ${rec.role.toLowerCase()}. Who's visiting today?`;
 }
 
-/** Answers one visitor message. `flow` is where the contact flow stood after the last reply. */
+/** Finds the passage of the record that best answers a question, or null when nothing does. */
+export type Lookup = (question: string) => Chunk | null;
+
+/**
+ * Answers one visitor message. `flow` is where the contact flow stood after the last reply; `lookup`
+ * searches the record when no simple rule matches.
+ */
 export function respondOffline(
   input: string,
   flow: ContactFlow | null,
   rec: AgentRecord,
+  lookup?: Lookup,
 ): AgentReply {
   const raw = input.trim();
   const q = raw.toLowerCase();
@@ -240,10 +249,54 @@ export function respondOffline(
     });
   }
 
+  const found = lookup?.(raw);
+  if (found) {
+    return reply(`From the record, ${found.title}: ${quote(found, raw)}`, {
+      tools: sourceTools(found),
+      chips: chips(),
+    });
+  }
+
   return reply(
     `That isn't in the record I keep. I can show projects, experience or education, hand you the resume, or send ${rec.name} a message.`,
     { chips: chips() },
   );
+}
+
+/**
+ * The two sentences of a passage that share the most words with the question, in their original
+ * order (the opening ones on a tie). An FAQ passage is quoted without its question.
+ */
+function quote(chunk: Chunk, question: string): string {
+  const text = chunk.kind === "faq" ? chunk.text.replace(/^[^?]*\?\s*/, "") : chunk.text;
+  // A stop only ends a sentence before a space, so "Fly.io" and "Next.js" stay whole
+  const sentences = text
+    .trim()
+    .split(/(?<=[.!?])\s+/)
+    .filter(Boolean);
+  const terms = queryGroups(question);
+  const score = (sentence: string) => {
+    const words = new Set(tokenize(sentence));
+    return terms.filter((group) => group.some((t) => words.has(t))).length;
+  };
+  return sentences
+    .map((t, i) => ({ t, i, score: score(t) }))
+    .sort((a, b) => b.score - a.score || a.i - b.i)
+    .slice(0, 2)
+    .sort((a, b) => a.i - b.i)
+    .map((s) => s.t)
+    .join(" ");
+}
+
+/** Shows the visitor where the passage lives on the page. */
+function sourceTools(chunk: Chunk): ToolCall[] {
+  if (chunk.section === "projects" && chunk.entityId) {
+    return [{ name: "open_project", input: { id: chunk.entityId } }];
+  }
+  if (chunk.section === "experience" && chunk.entityId) {
+    return [{ name: "open_role", input: { role: chunk.entityId } }];
+  }
+  return chunk.section === "home" ? [] : [{ name: "navigate", input: { section: chunk.section } }];
 }
 
 function defaultChips(rec: AgentRecord): string[] {

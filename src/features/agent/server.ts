@@ -9,4 +9,18 @@ export {
   lastUserText,
   MAX_INPUT_CHARS,
 } from "./handler";
+export { buildIndex, type Embeddings } from "./rag/build";
+export { buildChunks } from "./rag/chunk";
+export { EMBEDDING_DIMS, EMBEDDING_MODEL, embedDocuments, embedQuery } from "./rag/embed";
+export { RAG_INDEX_FILE, ragIndex } from "./rag/load-index";
+export {
+  type Hit,
+  MIN_BM25,
+  MIN_COSINE,
+  retrieve,
+  retrieveLexical,
+  type Retrieval,
+  TOP_K,
+} from "./rag/retrieve";
+export { RAG_INDEX_VERSION, type RagIndex } from "./rag/types";
 export { replyResponse } from "./stream";

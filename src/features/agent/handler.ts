@@ -4,7 +4,10 @@ import { z } from "zod";
 import { SECTION_IDS } from "@/features/content";
 import { loadSite } from "@/features/content/server";
 import { clientIp, createRateLimiter, type RateLimiter } from "@/lib/rate-limit";
-import { respondOffline } from "./offline-agent";
+import { type Lookup, respondOffline } from "./offline-agent";
+import { ragIndex } from "./rag/load-index";
+import { retrieveLexical } from "./rag/retrieve";
+import type { RagIndex } from "./rag/types";
 import { type AgentRecord, buildRecord } from "./record";
 import { replyResponse } from "./stream";
 import type { ContactFlow } from "./types";
@@ -51,6 +54,7 @@ type ChatBody = { messages: ChatMessage[] };
 export type ChatDeps = {
   limiter: RateLimiter;
   record: () => Promise<AgentRecord>;
+  index: () => Promise<RagIndex>;
   now: () => number;
 };
 
@@ -71,6 +75,7 @@ async function siteRecord(): Promise<AgentRecord> {
 export const defaultChatDeps: ChatDeps = {
   limiter: chatLimiter,
   record: siteRecord,
+  index: ragIndex,
   now: Date.now,
 };
 
@@ -130,6 +135,12 @@ export async function handleChat(request: Request, deps: ChatDeps = defaultChatD
     });
   }
 
-  const reply = respondOffline(text, currentFlow(messages), await deps.record());
+  const [record, index] = await Promise.all([deps.record(), deps.index()]);
+  const context = parsed.data.pageContext ?? null;
+  const lookup: Lookup = (q) => {
+    const found = retrieveLexical(index, q, context);
+    return found.lowConfidence ? null : (found.hits[0]?.chunk ?? null);
+  };
+  const reply = respondOffline(text, currentFlow(messages), record, lookup);
   return replyResponse(reply, "offline");
 }
