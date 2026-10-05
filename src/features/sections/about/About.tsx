@@ -1,9 +1,9 @@
-import { Fragment } from "react";
 import type { Profile, Skills } from "@/features/content";
 import { Emphasis } from "../shared/Emphasis";
 import { Eyebrow } from "../shared/Eyebrow";
 import { SectionShell } from "../shared/SectionShell";
 import { bodyClass, ruledRow } from "../shared/styles";
+import { SkillLine } from "./SkillLine";
 
 /** About: a statement, the bio with a spec sheet beside it, and the daily stack on one line. */
 export function About({ profile, skills }: { profile: Profile; skills: Skills }) {
@@ -46,16 +46,7 @@ export function About({ profile, skills }: { profile: Profile; skills: Skills })
         </dl>
       </div>
 
-      <p className="mt-[30px] font-mono text-[13px] leading-[2.1] text-muted">
-        Daily stack <span className="text-acc/35"> · </span>
-        {stack.map((s, i) => (
-          <Fragment key={s}>
-            {/* real spaces give the line places to wrap on narrow screens */}
-            {i > 0 ? <span className="text-acc/35"> / </span> : null}
-            <span className="whitespace-nowrap text-fg2 transition-colors hover:text-acc">{s}</span>
-          </Fragment>
-        ))}
-      </p>
+      <SkillLine skills={stack} />
     </SectionShell>
   );
 }

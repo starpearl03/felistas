@@ -1,7 +1,7 @@
 "use client";
 
 import type { Project } from "@/features/content";
-import { selectProject, useStage } from "@/features/stage";
+import { flashWord, selectProject, useStage } from "@/features/stage";
 import { cn } from "@/lib/cn";
 import { ruledRow } from "../shared/styles";
 
@@ -15,6 +15,12 @@ export function ProjectIndex({ projects }: { projects: ProjectSummary[] }) {
   const selectedId = useStage((s) => s.projectId);
   const selected = projects.find((p) => p.id === selectedId) ?? projects[0];
 
+  // Selecting a project also spells its name in the glyph field for a moment (UI-SPEC §4)
+  const choose = (p: ProjectSummary) => {
+    selectProject(p.id);
+    flashWord(p.name, 3200);
+  };
+
   return (
     <div className="mt-[34px] grid items-start gap-[clamp(24px,4vw,64px)] desk:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
       <div className="grid" role="list" aria-label="Projects">
@@ -26,9 +32,9 @@ export function ProjectIndex({ projects }: { projects: ProjectSummary[] }) {
                 type="button"
                 aria-pressed={on}
                 aria-controls="project-detail"
-                onClick={() => selectProject(p.id)}
-                onMouseEnter={() => selectProject(p.id)}
-                onFocus={() => selectProject(p.id)}
+                onClick={() => choose(p)}
+                onMouseEnter={() => choose(p)}
+                onFocus={() => choose(p)}
                 className={cn(
                   "group grid w-full cursor-pointer grid-cols-[56px_1fr_auto] items-baseline gap-4 py-3.5 text-left transition-[padding] duration-300",
                   on && "pl-3.5",
