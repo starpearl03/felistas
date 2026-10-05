@@ -6,25 +6,25 @@ The portfolio site of Felistas, a software engineer. The whole page is a calm, d
 
 ## Design
 
-| File | What it is |
-|---|---|
-| [`docs/ui/UI-SPEC.md`](docs/ui/UI-SPEC.md) | The full UI/UX specification: tokens, layout, animation maths, the chat and AI tools, each section, mobile, accessibility, and an acceptance checklist |
-| [`docs/ui/Felistas Dusk.html`](<docs/ui/Felistas Dusk.html>) | The approved prototype. Open it in a browser to see and use the exact design. It is the source of truth for exact values |
-| `docs/ui/Felistas Dusk.md` | An automatic text export of the prototype. Not useful on its own |
+| File                                                         | What it is                                                                                                                                             |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`docs/ui/UI-SPEC.md`](docs/ui/UI-SPEC.md)                   | The full UI/UX specification: tokens, layout, animation maths, the chat and AI tools, each section, mobile, accessibility, and an acceptance checklist |
+| [`docs/ui/Felistas Dusk.html`](<docs/ui/Felistas Dusk.html>) | The approved prototype. Open it in a browser to see and use the exact design. It is the source of truth for exact values                               |
+| `docs/ui/Felistas Dusk.md`                                   | An automatic text export of the prototype. Not useful on its own                                                                                       |
 
 ## Stack
 
-| Concern | Choice |
-|---|---|
-| Framework | Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict) |
-| Styling | Tailwind CSS v4, with the Dusk design tokens in `src/app/globals.css` |
-| Fonts | `next/font/google`: Instrument Serif, Geist, Geist Mono, Big Shoulders |
-| Animation | Hand-written Canvas 2D (glyph field, glyph sphere, flying headings) driven by one `requestAnimationFrame` loop; no WebGL or animation libraries |
-| AI | Vercel AI SDK 7 (`ai`, `@ai-sdk/react`, `@ai-sdk/google`) on the free Gemini tier: streaming chat with tools that drive the page, server-side only (`POST /api/chat`) |
+| Concern         | Choice                                                                                                                                                                  |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework       | Next.js 16 (App Router, Turbopack), React 19, TypeScript (strict)                                                                                                       |
+| Styling         | Tailwind CSS v4, with the Dusk design tokens in `src/app/globals.css`                                                                                                   |
+| Fonts           | `next/font/google`: Instrument Serif, Geist, Geist Mono, Big Shoulders                                                                                                  |
+| Animation       | Hand-written Canvas 2D (glyph field, glyph sphere, flying headings) driven by one `requestAnimationFrame` loop; no WebGL or animation libraries                         |
+| AI              | Vercel AI SDK 7 (`ai`, `@ai-sdk/react`, `@ai-sdk/google`) on the free Gemini tier: streaming chat with tools that drive the page, server-side only (`POST /api/chat`)   |
 | Retrieval (RAG) | Hybrid BM25 + `gemini-embedding-001` with reciprocal rank fusion over a JSON index built from `content/` at build time (no vector database); answers cite their sources |
-| Email | Resend (`POST /api/contact`), input validated with zod |
-| Content | Markdown + YAML frontmatter in `content/`, validated with zod; one source for the pages, the RAG index and the offline agent |
-| Hosting | Vercel |
+| Email           | Resend (`POST /api/contact`), input validated with zod                                                                                                                  |
+| Content         | Markdown + YAML frontmatter in `content/`, validated with zod; one source for the pages, the RAG index and the offline agent                                            |
+| Hosting         | Vercel                                                                                                                                                                  |
 
 ## Getting started
 
@@ -40,24 +40,33 @@ The site works without keys. Without `GEMINI_API_KEY`, Dusk falls back to a loca
 
 ### Environment variables
 
-| Variable | Required | Purpose |
-|---|---|---|
-| `GEMINI_API_KEY` | For live AI | Gemini key from [Google AI Studio](https://aistudio.google.com/apikey) (the free tier is enough) |
-| `GEMINI_MODEL` | No | Model id, default `gemini-flash-latest` |
-| `RESEND_API_KEY` | For email | Resend API key |
-| `CONTACT_TO_EMAIL` | For email | Inbox that receives visitor messages |
-| `CONTACT_FROM_EMAIL` | For email | Verified sender, for example `Dusk <dusk@felistas.dev>` |
-| `NEXT_PUBLIC_SITE_URL` | For production | Canonical URL for metadata and Open Graph |
+| Variable               | Required       | Purpose                                                                                          |
+| ---------------------- | -------------- | ------------------------------------------------------------------------------------------------ |
+| `GEMINI_API_KEY`       | For live AI    | Gemini key from [Google AI Studio](https://aistudio.google.com/apikey) (the free tier is enough) |
+| `GEMINI_MODEL`         | No             | Model id, default `gemini-flash-latest`                                                          |
+| `RESEND_API_KEY`       | For email      | Resend API key                                                                                   |
+| `CONTACT_TO_EMAIL`     | For email      | Inbox that receives visitor messages                                                             |
+| `CONTACT_FROM_EMAIL`   | For email      | Verified sender, for example `Dusk <dusk@felistas.dev>`                                          |
+| `NEXT_PUBLIC_SITE_URL` | For production | Canonical URL for metadata and Open Graph                                                        |
 
 ### Scripts
 
-| Command | Does |
-|---|---|
-| `npm run dev` | Start the dev server |
-| `npm run build` / `npm start` | Production build and serve |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript, no emit |
-| `npm run check` | Lint and typecheck together |
+| Command                       | Does                                                                |
+| ----------------------------- | ------------------------------------------------------------------- |
+| `npm run dev`                 | Start the dev server                                                |
+| `npm run build` / `npm start` | Production build and serve                                          |
+| `npm run lint`                | ESLint                                                              |
+| `npm run typecheck`           | TypeScript, no emit                                                 |
+| `npm run format`              | Format with Prettier (`format:check` only checks)                   |
+| `npm run test`                | Unit tests (Vitest)                                                 |
+| `npm run test:e2e`            | End-to-end tests (Playwright, desktop and mobile Chromium)          |
+| `npm run verify`              | Lint, typecheck, format check, unit tests and build: the merge gate |
+
+First-time e2e setup: `npx playwright install chromium`.
+
+### Contributing
+
+`main` only changes through pull requests. CI (`.github/workflows/ci.yml`) must be green before merging, and PRs are squash-merged. `npm install` activates a pre-push hook (`.githooks/pre-push`) that refuses direct pushes to `main`, and the `main-guard` workflow flags any commit on `main` that did not come from a merged PR.
 
 ## Project structure
 
