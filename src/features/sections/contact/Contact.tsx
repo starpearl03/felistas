@@ -1,4 +1,5 @@
 import { CopyButton } from "@/components/ui/CopyButton";
+import { CurrentYear } from "@/components/ui/CurrentYear";
 import type { Profile } from "@/features/content";
 import { Eyebrow } from "../shared/Eyebrow";
 import { SectionShell } from "../shared/SectionShell";
@@ -42,7 +43,7 @@ export function Contact({ profile }: { profile: Profile }) {
 
       <footer className="mt-9 flex flex-wrap justify-between gap-3 font-mono text-[11px] text-muted">
         <span>
-          © {new Date().getFullYear()} {profile.name}
+          © <CurrentYear /> {profile.name}
         </span>
         <span>Built with Next.js</span>
       </footer>

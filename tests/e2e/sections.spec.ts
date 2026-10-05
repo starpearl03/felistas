@@ -89,3 +89,35 @@ test.describe("desktop navigation", () => {
     await expect(page.getByRole("button", { name: "About" })).toBeFocused();
   });
 });
+
+test("the scroll progress line grows as the page scrolls", async ({ page }) => {
+  const progress = page.locator("[data-progress]");
+  const scale = () =>
+    progress.evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).a);
+  expect(await scale()).toBeLessThan(0.05);
+  await page.evaluate(() => {
+    const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
+    sc.scrollTop = sc.scrollHeight;
+  });
+  await expect.poll(scale).toBeGreaterThan(0.95);
+});
+
+test.describe("on still without the OS reduced-motion setting", () => {
+  test.skip(({ isMobile }) => isMobile, "uses the desktop nav");
+
+  test("navigation jumps instantly", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto("/");
+    await page.getByRole("button", { name: "still" }).click();
+    const landed = await page.evaluate(() => {
+      const nav = document.querySelector('nav[aria-label="Sections"]')!;
+      const button = [...nav.querySelectorAll("button")].find((b) => b.textContent === "Contact")!;
+      button.click();
+      const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
+      const target = sc.querySelector<HTMLElement>('[data-sec="contact"]')!;
+      // read back in the same task: an instant scroll has already arrived, a smooth one has not
+      return Math.abs(sc.scrollTop - Math.min(target.offsetTop, sc.scrollHeight - sc.clientHeight));
+    });
+    expect(landed).toBeLessThan(2);
+  });
+});

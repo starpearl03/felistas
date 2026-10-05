@@ -25,7 +25,10 @@ export function TopBar({ domain }: TopBarProps) {
       <div
         data-progress
         aria-hidden
-        className="pointer-events-none! absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-acc opacity-60"
+        // The engine writes transform: scaleX(progress). Tailwind's scale-x-* would set the
+        // separate CSS `scale` property, which multiplies with it, so the start value is inline.
+        style={{ transform: "scaleX(0)" }}
+        className="pointer-events-none! absolute inset-x-0 top-0 h-px origin-left bg-acc opacity-60"
       />
     </header>
   );

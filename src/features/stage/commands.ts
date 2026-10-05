@@ -23,7 +23,8 @@ export function navigate(section: SectionId): boolean {
   if (!scroller || !target) return false;
   scroller.scrollTo({
     top: target.offsetTop,
-    behavior: prefersReducedMotion() ? "auto" : "smooth",
+    // "auto" would follow the scroller's CSS scroll-smooth, so Still must ask for "instant"
+    behavior: prefersReducedMotion() ? "instant" : "smooth",
   });
   return true;
 }
