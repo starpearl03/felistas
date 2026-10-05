@@ -58,7 +58,7 @@ test.describe("on lively", () => {
   test("hovering a project spells its name in the glyph field", async ({ page, isMobile }) => {
     test.skip(isMobile, "hover needs a pointer");
     await goTo(page, "projects");
-    await page.getByRole("button", { name: /Atlas/ }).hover();
+    await page.getByRole("button", { name: /^\d{4} Atlas/ }).hover();
     await expect(stage(page)).toHaveAttribute("data-flash", "ATLAS");
   });
 });
@@ -90,7 +90,7 @@ test.describe("with reduced motion on still", () => {
     await page.goto("/");
     await expect(stage(page)).toHaveAttribute("data-motion", "still");
     await goTo(page, "projects");
-    await page.getByRole("button", { name: /Atlas/ }).hover();
+    await page.getByRole("button", { name: /^\d{4} Atlas/ }).hover();
     await expect(stage(page)).toHaveAttribute("data-flash", "ATLAS");
     const during = await glyphPrint(page);
     // keep the mouse still: only the end of the flash may redraw the field
