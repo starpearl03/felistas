@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Big_Shoulders, Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { resolveSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 // Font roles are defined in docs/ui/UI-SPEC.md §2. Canvas code must read the
@@ -21,7 +22,7 @@ const display = Big_Shoulders({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: resolveSiteUrl(),
   title: "Felistas · Software Engineer",
   description:
     "Backends, data pipelines and AI features that stay calm under load. Ask Dusk, the portfolio's AI, anything about Felistas.",

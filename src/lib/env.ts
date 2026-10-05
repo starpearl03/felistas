@@ -15,7 +15,8 @@ export const envSchema = z.object({
   RESEND_API_KEY: optional,
   CONTACT_TO_EMAIL: optional.pipe(z.email().optional()),
   CONTACT_FROM_EMAIL: optional,
-  NEXT_PUBLIC_SITE_URL: optional.pipe(z.url().optional()),
+  // Not validated here: a bad value must not break the build. resolveSiteUrl() checks it and falls back.
+  NEXT_PUBLIC_SITE_URL: optional,
 });
 
 export type Env = z.infer<typeof envSchema>;
