@@ -4,12 +4,21 @@ import { DEFAULT_MOTION, type Motion, MOTION_STORAGE_KEY, resolveMotion } from "
 
 export type StageState = {
   motion: Motion;
-  /** Written by the loop's scroll-position detection (P3), never by commands */
+  /** Written by the loop's scroll-position detection, never by commands */
   section: SectionId;
+  /** Selected project id; null means the first project */
+  projectId: string | null;
+  /** Selected role slug; null means the current role */
+  roleSlug: string | null;
 };
 
 /** What the server renders; the client reconciles after hydration. */
-export const INITIAL_STAGE_STATE: StageState = { motion: DEFAULT_MOTION, section: "home" };
+export const INITIAL_STAGE_STATE: StageState = {
+  motion: DEFAULT_MOTION,
+  section: "home",
+  projectId: null,
+  roleSlug: null,
+};
 
 export const stageStore = createStore<StageState>(INITIAL_STAGE_STATE);
 

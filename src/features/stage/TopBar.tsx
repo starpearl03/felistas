@@ -1,11 +1,12 @@
 import { MotionSwitch } from "./MotionSwitch";
+import { SectionNav } from "./SectionNav";
 
 type TopBarProps = {
   /** e.g. "felistas.dev"; the part after the first dot is muted */
   domain: string;
 };
 
-/** The transparent bar across the top of the stage. The section nav and scroll progress arrive in P3. */
+/** The transparent bar across the top of the stage, with the scroll progress line along its top edge. */
 export function TopBar({ domain }: TopBarProps) {
   const dot = domain.indexOf(".");
   const name = dot > 0 ? domain.slice(0, dot) : domain;
@@ -17,9 +18,18 @@ export function TopBar({ domain }: TopBarProps) {
         {name}
         <span className="text-muted">{tld}</span>
       </span>
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-[18px]">
+        <SectionNav />
         <MotionSwitch />
       </div>
+      <div
+        data-progress
+        aria-hidden
+        // The engine writes transform: scaleX(progress). Tailwind's scale-x-* would set the
+        // separate CSS `scale` property, which multiplies with it, so the start value is inline.
+        style={{ transform: "scaleX(0)" }}
+        className="pointer-events-none! absolute inset-x-0 top-0 h-px origin-left bg-acc opacity-60"
+      />
     </header>
   );
 }

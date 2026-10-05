@@ -38,6 +38,18 @@
   --breakpoint-desk: 56.25rem;
 
   --animate-rise: rise 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-drift: drift 2.4s ease-in-out infinite;
+  @keyframes pulse-soft {
+    50% {
+      opacity: 0.3;
+    }
+  }
+  @keyframes drift {
+    50% {
+      transform: translateY(6px);
+    }
+  }
   @keyframes rise {
     from {
       opacity: 0;
@@ -57,7 +69,47 @@
     0 0 3px rgba(var(--bg-rgb), 0.7);
 }
 
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer components {
+  /* The companion column has no panel or divider: only this fade, so the glyphs show through */
+  .column-fade {
+    background: linear-gradient(
+      90deg,
+      rgba(var(--bg-rgb), 0.9) 0%,
+      rgba(var(--bg-rgb), 0.78) 62%,
+      rgba(var(--bg-rgb), 0) 100%
+    );
+  }
+
+  /* Every section sits on a radial scrim; its text gets the bg-coloured glow (UI-SPEC §8) */
+  .panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 70% 62% at 30% 52%,
+      rgba(var(--bg-rgb), 0.8),
+      rgba(var(--bg-rgb), 0.4) 60%,
+      transparent 85%
+    );
+  }
+  .panel > * {
+    position: relative;
+    max-width: 1060px;
+  }
+  .panel :is(p, h2, h3, li, dd) {
+    text-shadow:
+      0 0 22px rgba(var(--bg-rgb), 0.9),
+      0 0 3px rgba(var(--bg-rgb), 0.7);
+  }
+
   /* Soft scrim rising from the bottom-left of the intro, behind its copy */
   .scrim-hero::before {
     content: "";
