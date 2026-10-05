@@ -1,5 +1,7 @@
 # Felistas · portfolio
 
+[![CI](https://github.com/starpearl03/felistas/actions/workflows/ci.yml/badge.svg)](https://github.com/starpearl03/felistas/actions/workflows/ci.yml)
+
 The portfolio site of Felistas, a software engineer. The whole page is a calm, dark field of living glyphs, with an AI companion called **Dusk**, a rotating sphere made of glyphs. Visitors can ask Dusk about Felistas, jump to any section, download the resume, or leave a message.
 
 > Status: project setup. The approved design is a working prototype in [`docs/ui`](docs/ui), and the app UI is not built yet.
@@ -66,7 +68,7 @@ First-time e2e setup: `npx playwright install chromium`.
 
 ### Contributing
 
-`main` only changes through pull requests. CI (`.github/workflows/ci.yml`) must be green before merging, and PRs are squash-merged. `npm install` activates a pre-push hook (`.githooks/pre-push`) that refuses direct pushes to `main`, and the `main-guard` workflow flags any commit on `main` that did not come from a merged PR.
+`main` is protected on GitHub: it only changes through pull requests, and the `verify + e2e` check must pass on an up-to-date branch. CI (`.github/workflows/ci.yml`) must be green before merging, and PRs are squash-merged. `npm install` activates a pre-push hook (`.githooks/pre-push`) that refuses direct pushes to `main`, and the `main-guard` workflow flags any commit on `main` that did not come from a merged PR.
 
 ## Project structure
 
