@@ -33,6 +33,48 @@
   --font-display: var(--ff-display);
 }
 
+@theme {
+  /* At 900px and up the companion is a column; below it becomes a bottom sheet (UI-SPEC §9) */
+  --breakpoint-desk: 56.25rem;
+
+  --animate-rise: rise 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Keeps text readable over the glyph field (UI-SPEC §8) */
+@utility text-glow {
+  text-shadow:
+    0 0 22px rgba(var(--bg-rgb), 0.9),
+    0 0 3px rgba(var(--bg-rgb), 0.7);
+}
+
+@layer components {
+  /* Soft scrim rising from the bottom-left of the intro, behind its copy */
+  .scrim-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse 60% 34% at 28% 100%,
+      rgba(var(--bg-rgb), 0.85),
+      transparent 80%
+    );
+  }
+  .scrim-hero > * {
+    position: relative;
+  }
+}
+
 body {
   background: var(--bg);
   color: var(--fg);

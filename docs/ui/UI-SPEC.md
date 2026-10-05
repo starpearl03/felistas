@@ -251,7 +251,7 @@ These are visitor-selectable and remembered in `localStorage` under `dusk-motion
 | calm   | .020                                         | .95              | .45          | 1×          |
 | lively | .045                                         | 1.10             | .58          | 1.7×        |
 
-Still also turns off the heading flight, the shape bursts and the decoding effects. Reduced motion additionally disables CSS animations and smooth scrolling, and redraws canvases only on scroll or pointer events.
+Still also turns off the heading flight, the shape bursts and the decoding effects. Reduced motion additionally disables CSS animations and smooth scrolling, and, while the level stays on Still, redraws canvases only on scroll or pointer events. A visitor who explicitly picks Calm or Lively gets continuous animation again: the explicit choice wins over the OS preference.
 
 Pause the animation loop when `document.hidden`.
 

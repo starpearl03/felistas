@@ -3,7 +3,8 @@
 sample: true
 name: Felistas
 role: Software Engineer
-line: Backends, data pipelines and AI features that stay calm under load.
+# *word* marks the accent word in the intro line
+line: Backends, data pipelines and AI features that stay *calm* under load.
 availability: Available for senior roles
 now: Leading the payments platform at Northwind Labs. On weekends, a Raft store in Rust.
 facts:
@@ -16,6 +17,7 @@ facts:
   - label: Status
     value: Open to senior roles
 email: hello@felistas.dev
+domain: felistas.dev
 links:
   github: https://github.com/felistas
   linkedin: https://linkedin.com/in/felistas

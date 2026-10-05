@@ -9,7 +9,13 @@ import type {
 
 type Data<S extends z.ZodType> = Omit<z.output<S>, "sample">;
 
+export type TextPart = { text: string; em: boolean };
+
 export type Profile = Data<typeof profileSchema> & {
+  /** The line as plain text (emphasis markers removed) */
+  line: string;
+  /** The line split into plain and `*emphasised*` parts, for rendering */
+  lineParts: TextPart[];
   /** Paragraphs from the body of content/profile.md */
   about: string[];
 };

@@ -1,15 +1,17 @@
 import { loadSite } from "@/features/content/server";
+import { Intro } from "@/features/sections";
+import { Stage, TopBar } from "@/features/stage";
 
-// Placeholder until the Dusk stage is built. See docs/ui/UI-SPEC.md for the target UI.
 export default async function Home() {
   const { profile } = await loadSite();
+
   return (
-    <main className="flex min-h-dvh flex-col justify-end gap-4 px-6 pb-16 sm:px-16">
-      <p className="font-mono text-[11px] tracking-[0.18em] text-acc uppercase">
-        Portfolio in progress
-      </p>
-      <h1 className="font-serif text-6xl leading-[0.95] sm:text-8xl">{profile.name}</h1>
-      <p className="max-w-[28ch] font-serif text-2xl text-fg2">{profile.line}</p>
-    </main>
+    <Stage word={profile.name.toUpperCase()}>
+      <TopBar domain={profile.domain} />
+      {/* Content sits to the right of the companion column on desktop (the column itself arrives in P3) */}
+      <main className="absolute inset-y-0 right-0 left-0 z-2 desk:left-(--col)">
+        <Intro profile={profile} />
+      </main>
+    </Stage>
   );
 }
