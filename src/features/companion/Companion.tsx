@@ -157,6 +157,7 @@ export function Companion({ config }: { config: CompanionConfig }) {
           thinking={status === "submitted"}
           config={config}
           speakingId={speakingId}
+          settling={busy || revealing}
           onRevealingChange={onRevealingChange}
         />
 
@@ -226,7 +227,9 @@ export function Companion({ config }: { config: CompanionConfig }) {
       </form>
       <p className="mt-2.5 hidden justify-between gap-2 font-mono text-[10px] tracking-[.06em] text-muted desk:flex">
         <span>Enter to send</span>
-        <span>{lastAssistant?.metadata?.mode === "live" ? "Gemini" : "Offline mode"}</span>
+        <span>
+          {lastAssistant?.metadata?.mode === "live" ? "Gemini, free tier" : "Offline mode"}
+        </span>
       </p>
       <Toast />
     </aside>
