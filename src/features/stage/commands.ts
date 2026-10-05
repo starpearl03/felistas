@@ -3,7 +3,7 @@
 // directly: they scroll, and the loop's scroll-position detection follows.
 import type { SectionId } from "@/features/content";
 import type { Motion } from "./motion";
-import { persistMotion, stageStore } from "./store";
+import { type Draft, persistMotion, stageStore, type Voice } from "./store";
 
 export const SCROLLER_SELECTOR = "[data-scroller]";
 
@@ -42,4 +42,65 @@ export function selectProject(id: string): void {
 
 export function selectRole(slug: string): void {
   stageStore.set({ roleSlug: slug });
+}
+
+/** Opens a project: scrolls to Projects, selects it and spells its name in the glyph field. */
+export function openProject(id: string, name?: string): void {
+  navigate("projects");
+  selectProject(id);
+  if (name) flashWord(name, 3200);
+}
+
+/** Opens a role on the Experience ruler. */
+export function openRole(slug: string): void {
+  navigate("experience");
+  selectRole(slug);
+}
+
+/** Starts a real download of the resume file. */
+export function downloadResume(href: string, file: string): void {
+  const a = document.createElement("a");
+  a.href = href;
+  a.download = file;
+  a.rel = "noopener";
+  document.body.append(a);
+  a.click();
+  a.remove();
+}
+
+let nextId = 0;
+
+/** Shows the draft card. Nothing is sent until the visitor presses Send on it. */
+export function showDraft(draft: Omit<Draft, "id">): void {
+  stageStore.set({ draft: { ...draft, id: ++nextId }, chatOpen: true });
+}
+
+export function clearDraft(): void {
+  stageStore.set({ draft: null });
+}
+
+/** Opens the companion (the sheet on phones) and focuses the composer. */
+export function openChat(): void {
+  stageStore.set({ chatOpen: true });
+  requestAnimationFrame(() => document.querySelector<HTMLInputElement>("#dusk-input")?.focus());
+}
+
+export function closeChat(): void {
+  stageStore.set({ chatOpen: false });
+  // on phones, folding the sheet also drops the keyboard
+  const active = document.activeElement;
+  if (active instanceof HTMLElement && active.id === "dusk-input") active.blur();
+}
+
+/** Asks Dusk a question from anywhere on the page. */
+export function ask(text: string): void {
+  stageStore.set({ ask: { text, id: ++nextId }, chatOpen: true });
+}
+
+export function setVoice(voice: Voice): void {
+  stageStore.set({ voice });
+}
+
+export function toast(text: string): void {
+  stageStore.set({ toast: { text, id: ++nextId } });
 }

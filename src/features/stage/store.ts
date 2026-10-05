@@ -1,6 +1,22 @@
 import type { SectionId } from "@/features/content";
 import { createStore } from "@/lib/store";
+import type { ShapeName } from "./engine/shapes";
 import { DEFAULT_MOTION, type Motion, MOTION_STORAGE_KEY, resolveMotion } from "./motion";
+
+/** A message the visitor is about to send to Felistas, shown on the draft card. */
+export type Draft = {
+  replyTo: string;
+  name?: string;
+  company?: string;
+  topic?: string;
+  message: string;
+  /** Honeypot value carried from the contact letter */
+  website?: string;
+  id: number;
+};
+
+/** What Dusk is doing, which the sphere shows: thinking shrinks and spins, speaking ripples. */
+export type Voice = "idle" | "think" | "speak";
 
 export type StageState = {
   motion: Motion;
@@ -12,6 +28,15 @@ export type StageState = {
   roleSlug: string | null;
   /** A word to spell briefly in the glyph field; `id` changes on every request */
   flash: { word: string; ms: number; id: number } | null;
+  /** The sphere's current form, written by the engine */
+  shape: ShapeName;
+  voice: Voice;
+  /** Phones: whether the companion sheet is expanded */
+  chatOpen: boolean;
+  draft: Draft | null;
+  /** A question asked from elsewhere on the page, for the companion to send */
+  ask: { text: string; id: number } | null;
+  toast: { text: string; id: number } | null;
 };
 
 /** What the server renders; the client reconciles after hydration. */
@@ -21,6 +46,12 @@ export const INITIAL_STAGE_STATE: StageState = {
   projectId: null,
   roleSlug: null,
   flash: null,
+  shape: "sphere",
+  voice: "idle",
+  chatOpen: false,
+  draft: null,
+  ask: null,
+  toast: null,
 };
 
 export const stageStore = createStore<StageState>(INITIAL_STAGE_STATE);

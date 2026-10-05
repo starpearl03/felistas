@@ -12,7 +12,7 @@ type StageProps = {
 
 /**
  * The full-viewport stage, back to front: the glyph field, a veil that dims it once the visitor
- * leaves the intro, the page content, the companion column fade, and the sphere on top.
+ * leaves the intro, the page content and companion, and the sphere on top.
  * The engine sets `data-motion`, `data-section` and `data-shape` on the root.
  */
 export function Stage({ word, children }: StageProps) {
@@ -37,11 +37,6 @@ export function Stage({ word, children }: StageProps) {
       <canvas ref={glyphs} data-layer="glyphs" aria-hidden className="absolute inset-0 size-full" />
       <div data-veil aria-hidden className="pointer-events-none absolute inset-0 bg-bg opacity-0" />
       {children}
-      {/* The companion column: no panel or divider, only a fade so the glyphs show through */}
-      <div
-        aria-hidden
-        className="column-fade pointer-events-none absolute inset-y-0 left-0 z-5 hidden w-(--col) desk:block"
-      />
       <canvas
         ref={sphere}
         data-layer="sphere"
