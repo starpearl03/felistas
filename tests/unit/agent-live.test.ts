@@ -160,13 +160,13 @@ describe("system prompt", () => {
     expect(prompt).toContain("ledgerline (Ledgerline)");
     expect(prompt).toContain("with the project Pulse selected");
     expect(prompt).toContain("You cannot send email");
-    expect(prompt).not.toContain("nothing in the record clearly matches");
+    expect(prompt).not.toContain("retrieval is unsure");
   });
 
   it("warns the model when retrieval found nothing", () => {
     const prompt = buildSystemPrompt({ record, sources: [], context: null, lowConfidence: true });
     expect(prompt).toContain("None found.");
-    expect(prompt).toContain("nothing in the record clearly matches");
+    expect(prompt).toContain("retrieval is unsure");
   });
 });
 

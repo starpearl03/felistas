@@ -142,7 +142,8 @@ export async function liveResponse(input: LiveInput): Promise<Response> {
           messages,
           tools,
           stopWhen: stepCountIs(MAX_STEPS),
-          maxRetries: 0,
+          // One retry for a transient overload ("high demand", 503); then the offline answer
+          maxRetries: 1,
           abortSignal: input.abortSignal,
           onError: () => {}, // reported through the UI stream below
         });

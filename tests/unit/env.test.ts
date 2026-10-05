@@ -5,7 +5,7 @@ describe("parseEnv", () => {
   it("accepts an empty environment and defaults the model", () => {
     const env = parseEnv({});
     expect(env.GEMINI_API_KEY).toBeUndefined();
-    expect(env.GEMINI_MODEL).toBe("gemini-flash-latest");
+    expect(env.GEMINI_MODEL).toBe("gemini-flash-lite-latest");
   });
 
   it("treats blank values as unset", () => {

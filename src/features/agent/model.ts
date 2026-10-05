@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { APICallError, type LanguageModel } from "ai";
+import { APICallError, type LanguageModel, RetryError } from "ai";
 import { env } from "@/lib/env";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { embedQuery } from "./rag/embed";
@@ -26,8 +26,11 @@ export const liveBudget = createRateLimiter([
 export const COOLDOWN_MS = 60 * 1_000;
 let coolUntil = 0;
 
-export const isRateLimit = (error: unknown) =>
-  APICallError.isInstance(error) && error.statusCode === 429;
+/** A 429, also when it arrives wrapped after the SDK's retry */
+export function isRateLimit(error: unknown): boolean {
+  const cause = RetryError.isInstance(error) ? error.lastError : error;
+  return APICallError.isInstance(cause) && cause.statusCode === 429;
+}
 
 /** Pauses live answers after a rate limit; other failures just fall back for that one reply. */
 export function noteModelError(error: unknown, now = Date.now()) {

@@ -15,7 +15,13 @@ const CANDIDATES = 20;
  * and score near 0 (the name alone, in almost every chunk, adds about 0.03).
  */
 export const MIN_BM25 = 1;
-export const MIN_COSINE = 0.62;
+/**
+ * Hybrid only, and only when BM25 is also weak. Calibrated on the golden set with
+ * gemini-embedding-001 (768 dims): any question naming the person scores about 0.70 on the name
+ * alone ("Is Felistas married?" 0.696), while answerable questions without a keyword match score
+ * from 0.715 up. Questions that miss both are flagged; the prompt then asks for a careful answer.
+ */
+export const MIN_COSINE = 0.75;
 
 /** Page-context boosts, in units of a first-place RRF vote */
 const ENTITY_BOOST = 0.5;

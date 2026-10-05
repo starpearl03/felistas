@@ -11,7 +11,7 @@ const optional = z
 
 export const envSchema = z.object({
   GEMINI_API_KEY: optional,
-  GEMINI_MODEL: optional.transform((v) => v ?? "gemini-flash-latest"),
+  GEMINI_MODEL: optional.transform((v) => v ?? "gemini-flash-lite-latest"),
   RESEND_API_KEY: optional,
   CONTACT_TO_EMAIL: optional.pipe(z.email().optional()),
   CONTACT_FROM_EMAIL: optional,

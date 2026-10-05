@@ -45,7 +45,7 @@ The site works without keys. Without `GEMINI_API_KEY`, Dusk falls back to a loca
 | Variable               | Required       | Purpose                                                                                          |
 | ---------------------- | -------------- | ------------------------------------------------------------------------------------------------ |
 | `GEMINI_API_KEY`       | For live AI    | Gemini key from [Google AI Studio](https://aistudio.google.com/apikey) (the free tier is enough) |
-| `GEMINI_MODEL`         | No             | Model id, default `gemini-flash-latest`                                                          |
+| `GEMINI_MODEL`         | No             | Model id, default `gemini-flash-lite-latest`                                                     |
 | `RESEND_API_KEY`       | For email      | Resend API key                                                                                   |
 | `CONTACT_TO_EMAIL`     | For email      | Inbox that receives visitor messages                                                             |
 | `CONTACT_FROM_EMAIL`   | For email      | Verified sender, for example `Dusk <dusk@felistas.dev>`                                          |
