@@ -34,8 +34,9 @@ jobs:
             case "$sha" in "$BOOTSTRAP_SHA"*) echo "skip bootstrap $sha"; continue ;; esac
             merged=0
             for attempt in 1 2 3 4 5; do
-              merged=$(gh api "repos/$REPO/commits/$sha/pulls" --jq '[.[] | select(.merged_at != null)] | length')
-              [ "$merged" -gt 0 ] && break
+              # an API error counts as "not linked yet" and is retried instead of aborting under set -e
+              merged=$(gh api "repos/$REPO/commits/$sha/pulls" --jq '[.[] | select(.merged_at != null)] | length' 2>/dev/null || echo 0)
+              if [ "$merged" -gt 0 ]; then break; fi
               sleep 10
             done
             if [ "$merged" -gt 0 ]; then
