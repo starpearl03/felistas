@@ -1,0 +1,91 @@
+import { expect, type Page, test } from "@playwright/test";
+
+const stage = (page: Page) => page.locator("[data-stage]");
+const section = (page: Page, id: string) => page.locator(`[data-sec="${id}"]`);
+
+test.beforeEach(async ({ page }) => {
+  // Instant scrolling keeps the assertions about where the page landed deterministic
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+});
+
+test("renders every section in order", async ({ page }) => {
+  const ids = await page
+    .locator("[data-scroller] > [data-sec]")
+    .evaluateAll((els) => els.map((el) => el.getAttribute("data-sec")));
+  expect(ids).toEqual(["home", "about", "projects", "experience", "education", "contact"]);
+});
+
+test("see the work scrolls to projects and the page follows", async ({ page }) => {
+  await page.getByRole("button", { name: "See the work" }).click();
+  await expect(stage(page)).toHaveAttribute("data-section", "projects");
+  await expect(section(page, "projects")).toBeInViewport({ ratio: 0.6 });
+});
+
+test("projects: hovering, clicking and focusing a name fills the detail", async ({ page }) => {
+  await page.getByRole("button", { name: "See the work" }).click();
+  const detail = page.locator("#project-detail");
+  await expect(detail).toContainText("Real-time reconciliation engine");
+
+  await page.getByRole("button", { name: /Atlas/ }).hover();
+  await expect(detail).toContainText("40k");
+  await expect(page.getByRole("button", { name: /Atlas/ })).toHaveAttribute("aria-pressed", "true");
+
+  await page.getByRole("button", { name: /Quorum/ }).focus();
+  await expect(detail).toContainText("Raft");
+});
+
+test("experience: the ruler starts on the current role and selects lanes", async ({ page }) => {
+  const detail = page.locator("#role-detail");
+  await expect(detail).toContainText("Senior Software Engineer");
+  await page.getByRole("button", { name: /Software Engineer at Kestrel Systems/ }).click();
+  await expect(detail).toContainText("Cut API p95 latency by 63%");
+});
+
+test("contact shows the email with a copy action", async ({ page }) => {
+  const email = section(page, "contact").getByRole("link", { name: "hello@felistas.dev" });
+  await expect(email).toHaveAttribute("href", "mailto:hello@felistas.dev");
+  await expect(section(page, "contact").getByRole("button", { name: /Copy/ })).toBeVisible();
+});
+
+test("no section scrolls sideways", async ({ page }) => {
+  for (const id of ["about", "projects", "experience", "education", "contact"]) {
+    await page.evaluate((sec) => {
+      const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
+      sc.scrollTop = sc.querySelector<HTMLElement>(`[data-sec="${sec}"]`)!.offsetTop;
+    }, id);
+    const overflow = await page.evaluate(() => {
+      const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
+      return Math.max(
+        document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        sc.scrollWidth - sc.clientWidth,
+      );
+    });
+    expect(overflow, id).toBeLessThanOrEqual(0);
+  }
+});
+
+test.describe("desktop navigation", () => {
+  test.skip(({ isMobile }) => isMobile, "the section nav is hidden on phones");
+
+  test("the nav scrolls to each section and marks it current", async ({ page }) => {
+    const nav = page.getByRole("navigation", { name: "Sections" });
+    for (const [label, id] of [
+      ["Experience", "experience"],
+      ["Education", "education"],
+      ["About", "about"],
+    ]) {
+      await nav.getByRole("button", { name: label }).click();
+      await expect(stage(page)).toHaveAttribute("data-section", id);
+      await expect(nav.getByRole("button", { name: label })).toHaveAttribute(
+        "aria-current",
+        "true",
+      );
+    }
+  });
+
+  test("keyboard reaches the nav before the content", async ({ page }) => {
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "About" })).toBeFocused();
+  });
+});
