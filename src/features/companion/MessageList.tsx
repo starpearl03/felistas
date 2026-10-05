@@ -44,6 +44,8 @@ export function MessageList({
       ref={log}
       role="log"
       aria-live="polite"
+      // focusable, so keyboard users can scroll back through the conversation
+      tabIndex={0}
       aria-label="Conversation with Dusk"
       className="scrollbar-none flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto [mask-image:linear-gradient(transparent,var(--bg)_28px)] px-1 pt-[18px] pb-2.5"
     >
