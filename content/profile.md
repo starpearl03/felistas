@@ -25,7 +25,7 @@ resume:
   href: /resume/felistas-resume.pdf
   file: felistas-resume.pdf
   pages: 1
-  size: 1 KB
+  size: 271 KB
   updated: Oct 2026
 ---
 
