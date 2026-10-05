@@ -1,6 +1,6 @@
 import "server-only";
 
-import { readFile, readdir } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { cache } from "react";
 import type { z } from "zod";
@@ -23,6 +23,13 @@ import {
 import type { Site } from "./types";
 
 export const CONTENT_DIR = path.join(process.cwd(), "content");
+export const PUBLIC_DIR = path.join(process.cwd(), "public");
+
+const exists = (file: string) =>
+  access(file).then(
+    () => true,
+    () => false,
+  );
 
 export class ContentError extends Error {
   constructor(
@@ -97,7 +104,7 @@ function strip<T extends { sample: boolean }>(data: T): Omit<T, "sample"> {
 }
 
 /** Reads and validates every file in a content folder. Throws a ContentError naming the bad file. */
-export async function loadSiteFrom(root: string): Promise<Site> {
+export async function loadSiteFrom(root: string, publicDir = PUBLIC_DIR): Promise<Site> {
   const [profile, skills, faq, projects, roles, education] = await Promise.all([
     readEntry(root, "profile.md", profileSchema),
     readEntry(root, "skills.md", skillsSchema),
@@ -121,6 +128,10 @@ export async function loadSiteFrom(root: string): Promise<Site> {
   return {
     profile: {
       ...strip(profile.data),
+      resume: {
+        ...profile.data.resume,
+        available: await exists(path.join(publicDir, profile.data.resume.href)),
+      },
       line: plainText(profile.data.line),
       lineParts: emphasisParts(profile.data.line),
       about: paragraphs(profile.body),

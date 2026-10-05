@@ -11,7 +11,13 @@ type Data<S extends z.ZodType> = Omit<z.output<S>, "sample">;
 
 export type TextPart = { text: string; em: boolean };
 
-export type Profile = Data<typeof profileSchema> & {
+type ProfileData = Data<typeof profileSchema>;
+
+export type Profile = Omit<ProfileData, "resume"> & {
+  resume: ProfileData["resume"] & {
+    /** True when the file exists in public/, so download links can be shown */
+    available: boolean;
+  };
   /** The line as plain text (emphasis markers removed) */
   line: string;
   /** The line split into plain and `*emphasised*` parts, for rendering */
