@@ -1,5 +1,8 @@
 import type { CSSProperties } from "react";
 import type { Profile } from "@/features/content";
+import { Download } from "@/components/ui/icons";
+import { TextLink } from "@/components/ui/TextLink";
+import { AskDusk } from "../shared/AskDusk";
 import { Emphasis } from "../shared/Emphasis";
 import { GoTo } from "../shared/GoTo";
 import { SectionShell } from "../shared/SectionShell";
@@ -9,7 +12,7 @@ const riseClass = "animate-rise motion-reduce:animate-none";
 
 /**
  * The first screen. The name itself is spelled in glyphs on the canvas, so the real h1 is for
- * screen readers. "Ask Dusk" and the resume link arrive with the phases that make them work.
+ * screen readers.
  */
 export function Intro({ profile }: { profile: Profile }) {
   const focus = profile.facts.find((f) => f.label === "Focus")?.value;
@@ -42,6 +45,12 @@ export function Intro({ profile }: { profile: Profile }) {
         style={rise(2)}
         className={`${riseClass} flex flex-wrap items-center gap-x-[30px] gap-y-3`}
       >
+        <AskDusk>Ask Dusk anything</AskDusk>
+        {profile.resume.available ? (
+          <TextLink href={profile.resume.href} download={profile.resume.file} icon={<Download />}>
+            Download resume
+          </TextLink>
+        ) : null}
         <GoTo section="projects">See the work</GoTo>
       </div>
 

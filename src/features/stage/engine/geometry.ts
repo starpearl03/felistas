@@ -33,6 +33,14 @@ export function sphereAt(hero: Circle, dock: Circle, k: number): Circle {
   return { x: lerp(hero.x, dock.x, k), y: lerp(hero.y, dock.y, k), R: lerp(hero.R, dock.R, k) };
 }
 
+/**
+ * Top padding of the companion column: the conversation sits under the sphere and rises with it,
+ * so it grows taller once the sphere has docked (UI-SPEC §5.1).
+ */
+export function columnLift(hero: Circle, dock: Circle, H: number, k: number): number {
+  return Math.round(lerp(hero.y + hero.R + H * 0.06, dock.y + dock.R + 34, k));
+}
+
 /** 0 on the intro, 1 once the visitor has scrolled 60% of a screen, eased. */
 export function introProgress(scrollTop: number, viewportHeight: number): number {
   if (viewportHeight <= 0) return 0;

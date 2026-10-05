@@ -12,6 +12,7 @@ import { stageStore } from "../store";
 import { loadCanvasFonts, readFontFamilies } from "./canvas";
 import { Flights } from "./flights";
 import {
+  columnLift,
   columnWidth,
   detectSection,
   dockedSphere,
@@ -65,6 +66,10 @@ export function createStageEngine({
   const scroller = root.querySelector<HTMLElement>("[data-scroller]");
   const veil = root.querySelector<HTMLElement>("[data-veil]");
   const progress = root.querySelector<HTMLElement>("[data-progress]");
+  const slot = root.querySelector<HTMLElement>("[data-sphere-slot]");
+  let lastLift = -1;
+  // Phones: opening the sheet docks the sphere into it even on the intro
+  let sheetDock = 0;
   const sections = scroller
     ? [...scroller.querySelectorAll<HTMLElement>("[data-sec]")].filter((el) =>
         isSectionId(el.dataset.sec),
@@ -116,6 +121,7 @@ export function createStageEngine({
       else flights.launch(heading, now);
     }
     sphere.setShape(SECTION_SHAPES[next], still);
+    stageStore.set({ shape: sphere.shape });
     syncAttributes();
   };
 
@@ -125,7 +131,9 @@ export function createStageEngine({
     const motion = MOTION[stageStore.get().motion];
     const scrollTop = scroller?.scrollTop ?? 0;
     const viewport = scroller?.clientHeight ?? H;
-    const k = introProgress(scrollTop, viewport);
+    const phone = !columnWidth(W);
+    sheetDock = lerp(sheetDock, phone && stageStore.get().chatOpen ? 1 : 0, onDemand() ? 1 : 0.15);
+    const k = Math.max(introProgress(scrollTop, viewport), sheetDock);
     const origin = root.getBoundingClientRect();
 
     const current = detectSection(
@@ -145,7 +153,23 @@ export function createStageEngine({
     }
 
     // The sphere glides from the hero position into the column and stays large (UI-SPEC §5.1)
-    const geo = sphereAt(heroSphere(W, H), dockedSphere(W, H, sheetSlot(W, H)), k);
+    // On phones the sphere docks into the companion sheet's slot, wherever the sheet currently is
+    const slotRect = slot?.getBoundingClientRect();
+    const slotPoint =
+      slotRect && slotRect.width > 0
+        ? {
+            x: slotRect.left - origin.left + slotRect.width / 2,
+            y: slotRect.top - origin.top + slotRect.height / 2,
+          }
+        : sheetSlot(W, H);
+    const hero = heroSphere(W, H);
+    const dock = dockedSphere(W, H, slotPoint);
+    const geo = sphereAt(hero, dock, k);
+    const lift = columnWidth(W) ? columnLift(hero, dock, H, k) : 0;
+    if (lift !== lastLift) {
+      lastLift = lift;
+      root.style.setProperty("--lift", `${lift}px`);
+    }
     const hasPointer = pointer.x > OUTSIDE;
 
     const lights: Light[] = [];
@@ -169,6 +193,9 @@ export function createStageEngine({
     sphere.gaze = hasPointer
       ? { x: (pointer.x - geo.x) / (W * 0.5), y: (pointer.y - geo.y) / (H * 0.5) }
       : null;
+    const voice = stageStore.get().voice;
+    sphere.voice.think = voice === "think" ? 1 : 0;
+    sphere.voice.speakTarget = voice === "speak" ? 1 : 0;
     sphere.frame(t, geo, motion);
 
     const ctx = sphere.context;
@@ -206,8 +233,25 @@ export function createStageEngine({
     loop.poke();
   };
 
+  // In on-demand mode a single poke would draw the sphere where the sheet was; keep drawing while
+  // the sheet settles so the sphere lands in its slot
+  let followTimer: ReturnType<typeof setInterval> | undefined;
+  let lastOpen = stageStore.get().chatOpen;
+  const follow = (ms: number) => {
+    clearInterval(followTimer);
+    const until = performance.now() + ms;
+    followTimer = setInterval(() => {
+      loop.poke();
+      if (performance.now() > until) clearInterval(followTimer);
+    }, 40);
+  };
+
   const onStoreChange = () => {
-    const { motion, flash } = stageStore.get();
+    const { motion, flash, chatOpen } = stageStore.get();
+    if (chatOpen !== lastOpen) {
+      lastOpen = chatOpen;
+      if (onDemand()) follow(600);
+    }
     if (motion !== lastMotion) {
       lastMotion = motion;
       resetHeadings();
@@ -271,6 +315,7 @@ export function createStageEngine({
       unsubscribe();
       clearTimeout(resizeTimer);
       clearTimeout(flashTimer);
+      clearInterval(followTimer);
       reducedMotion.removeEventListener("change", syncLoopMode);
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerleave", onPointerLeave);

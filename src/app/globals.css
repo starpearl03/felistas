@@ -76,17 +76,17 @@
   }
 }
 
-@layer components {
-  /* The companion column has no panel or divider: only this fade, so the glyphs show through */
-  .column-fade {
-    background: linear-gradient(
-      90deg,
-      rgba(var(--bg-rgb), 0.9) 0%,
-      rgba(var(--bg-rgb), 0.78) 62%,
-      rgba(var(--bg-rgb), 0) 100%
-    );
-  }
+/* The companion column has no panel or divider: only this fade, so the glyphs show through */
+@utility column-fade {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--bg-rgb), 0.9) 0%,
+    rgba(var(--bg-rgb), 0.78) 62%,
+    rgba(var(--bg-rgb), 0) 100%
+  );
+}
 
+@layer components {
   /* Every section sits on a radial scrim; its text gets the bg-coloured glow (UI-SPEC §8) */
   .panel::before {
     content: "";
@@ -142,7 +142,10 @@ body {
   font-family: var(--ff-sans), system-ui, sans-serif;
 }
 
-:focus-visible {
-  outline: 1.5px solid var(--acc);
-  outline-offset: 3px;
+@layer base {
+  /* In the base layer so a component can replace it (the composer shows focus with its underline) */
+  :focus-visible {
+    outline: 1.5px solid var(--acc);
+    outline-offset: 3px;
+  }
 }

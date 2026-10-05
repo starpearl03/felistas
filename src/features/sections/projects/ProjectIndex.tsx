@@ -3,6 +3,7 @@
 import type { Project } from "@/features/content";
 import { flashWord, selectProject, useStage } from "@/features/stage";
 import { cn } from "@/lib/cn";
+import { AskDusk } from "../shared/AskDusk";
 import { ruledRow } from "../shared/styles";
 
 export type ProjectSummary = Pick<
@@ -87,6 +88,11 @@ export function ProjectIndex({ projects }: { projects: ProjectSummary[] }) {
             </span>
           ))}
         </p>
+        <div>
+          <AskDusk question={`Tell me about ${selected.name}`}>
+            Ask Dusk about {selected.name}
+          </AskDusk>
+        </div>
       </div>
     </div>
   );

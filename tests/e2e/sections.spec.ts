@@ -27,11 +27,14 @@ test("projects: hovering, clicking and focusing a name fills the detail", async 
   const detail = page.locator("#project-detail");
   await expect(detail).toContainText("Real-time reconciliation engine");
 
-  await page.getByRole("button", { name: /Atlas/ }).hover();
+  await page.getByRole("button", { name: /^\d{4} Atlas/ }).hover();
   await expect(detail).toContainText("40k");
-  await expect(page.getByRole("button", { name: /Atlas/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: /^\d{4} Atlas/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
 
-  await page.getByRole("button", { name: /Quorum/ }).focus();
+  await page.getByRole("button", { name: /^\d{4} Quorum/ }).focus();
   await expect(detail).toContainText("Raft");
 });
 
@@ -75,9 +78,9 @@ test.describe("desktop navigation", () => {
       ["Education", "education"],
       ["About", "about"],
     ]) {
-      await nav.getByRole("button", { name: label }).click();
+      await nav.getByRole("button", { name: label, exact: true }).click();
       await expect(stage(page)).toHaveAttribute("data-section", id);
-      await expect(nav.getByRole("button", { name: label })).toHaveAttribute(
+      await expect(nav.getByRole("button", { name: label, exact: true })).toHaveAttribute(
         "aria-current",
         "true",
       );
@@ -86,7 +89,11 @@ test.describe("desktop navigation", () => {
 
   test("keyboard reaches the nav before the content", async ({ page }) => {
     await page.keyboard.press("Tab");
-    await expect(page.getByRole("button", { name: "About" })).toBeFocused();
+    await expect(
+      page
+        .getByRole("navigation", { name: "Sections" })
+        .getByRole("button", { name: "About", exact: true }),
+    ).toBeFocused();
   });
 });
 
