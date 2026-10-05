@@ -73,11 +73,29 @@ First-time e2e setup: `npx playwright install chromium`.
 Today:
 
 ```
+content/               all site content: Markdown + YAML frontmatter (currently sample: true)
 docs/ui/               approved design: prototype + UI-SPEC.md
 public/resume/         felistas-resume.pdf (add the real file)
 src/app/               routes, root layout, global tokens
-src/content/profile.ts sample content (moves to content/ as Markdown)
+src/features/content/  zod schemas, markdown helpers, server-only loader (loadSite)
+src/lib/               validated env
+tests/                 unit (Vitest) and e2e (Playwright)
 ```
+
+### Editing content
+
+Everything the site and Dusk say about Felistas comes from `content/`:
+
+| File                  | Holds                                                                       |
+| --------------------- | --------------------------------------------------------------------------- |
+| `profile.md`          | name, role, line, availability, facts, links, resume; the body is the bio   |
+| `skills.md`           | skill groups; the body explains how they are used                           |
+| `projects/<id>.md`    | one project per file (the file name is its id); the body is the case study  |
+| `experience/<org>.md` | one role per file with start/end years for the ruler; exactly one `current` |
+| `education/<slug>.md` | degrees and certifications                                                  |
+| `faq.md`              | `## Question` headings with answers                                         |
+
+The build validates every file and fails with the file name and field if something is wrong. Remove `sample: true` from each file as real content replaces the placeholders.
 
 Target:
 
