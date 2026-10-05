@@ -1,23 +1,30 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { type AgentRecord, buildRecord } from "@/features/agent";
 import {
+  buildChunks,
+  buildIndex,
   type ChatDeps,
   currentFlow,
   handleChat,
   lastUserText,
   MAX_INPUT_CHARS,
+  type RagIndex,
 } from "@/features/agent/server";
 import { CONTENT_DIR, loadSiteFrom } from "@/features/content/server";
 import { createRateLimiter } from "@/lib/rate-limit";
 
 let record: AgentRecord;
+let index: RagIndex;
 beforeAll(async () => {
-  record = buildRecord(await loadSiteFrom(CONTENT_DIR));
+  const site = await loadSiteFrom(CONTENT_DIR);
+  record = buildRecord(site);
+  index = buildIndex(buildChunks(site), site.profile.name);
 });
 
 const deps = (): ChatDeps => ({
   limiter: createRateLimiter([{ limit: 2, windowMs: 60_000 }]),
   record: async () => record,
+  index: async () => index,
   now: () => 1_000,
 });
 
@@ -90,6 +97,19 @@ describe("POST /api/chat", () => {
       deps(),
     );
     expect(res.status).toBe(200);
+  });
+
+  it("answers from the record when no rule matches, using the page context", async () => {
+    const res = await handleChat(
+      post({
+        messages: [userMsg("How fast does it render?")],
+        pageContext: { section: "projects", projectId: "pulse", roleSlug: null },
+      }),
+      deps(),
+    );
+    const body = await res.text();
+    expect(body).toContain('"delta":"Pulse');
+    expect(body).toContain('"input":{"id":"pulse"}');
   });
 
   it("rejects bad bodies, empty asks and long questions", async () => {
