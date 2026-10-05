@@ -2,6 +2,7 @@ import "server-only";
 
 import { parseEnv } from "@/lib/env";
 import { clientIp, createRateLimiter, type RateLimiter } from "@/lib/rate-limit";
+import { resolveSiteUrl } from "@/lib/site-url";
 import {
   checkTraps,
   CONTACT_ERRORS,
@@ -33,7 +34,7 @@ export const contactLimiter = createRateLimiter([
 export function mailConfigFromEnv(): MailConfig | null {
   const env = parseEnv(process.env);
   if (!env.RESEND_API_KEY || !env.CONTACT_TO_EMAIL || !env.CONTACT_FROM_EMAIL) return null;
-  const site = env.NEXT_PUBLIC_SITE_URL ? new URL(env.NEXT_PUBLIC_SITE_URL).host : "the portfolio";
+  const site = resolveSiteUrl().host;
   return {
     apiKey: env.RESEND_API_KEY,
     to: env.CONTACT_TO_EMAIL,

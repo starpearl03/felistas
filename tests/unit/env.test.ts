@@ -15,8 +15,11 @@ describe("parseEnv", () => {
     });
   });
 
-  it("rejects a malformed contact email and site url", () => {
+  it("rejects a malformed contact email", () => {
     expect(() => parseEnv({ CONTACT_TO_EMAIL: "not-an-email" })).toThrow(/CONTACT_TO_EMAIL/);
-    expect(() => parseEnv({ NEXT_PUBLIC_SITE_URL: "nope" })).toThrow(/NEXT_PUBLIC_SITE_URL/);
+  });
+
+  it("leaves the site url to resolveSiteUrl, so a bad value cannot break the build", () => {
+    expect(parseEnv({ NEXT_PUBLIC_SITE_URL: "felistas" }).NEXT_PUBLIC_SITE_URL).toBe("felistas");
   });
 });
