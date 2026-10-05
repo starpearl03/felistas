@@ -1,7 +1,8 @@
-import { profile } from "@/content/profile";
+import { loadSite } from "@/features/content/server";
 
 // Placeholder until the Dusk stage is built. See docs/ui/UI-SPEC.md for the target UI.
-export default function Home() {
+export default async function Home() {
+  const { profile } = await loadSite();
   return (
     <main className="flex min-h-dvh flex-col justify-end gap-4 px-6 pb-16 sm:px-16">
       <p className="font-mono text-[11px] tracking-[0.18em] text-acc uppercase">
