@@ -10,6 +10,10 @@ export {
 export type { Chunk } from "./rag/types";
 export { type AgentRecord, buildRecord } from "./record";
 export {
+  type AnyToolName,
+  SEARCH_DESCRIPTION,
+  SEARCH_TOOL,
+  type SearchResult,
   TOOL_DESCRIPTIONS,
   toolInputSchemas,
   type ToolCall,
@@ -18,4 +22,4 @@ export {
   type ToolName,
   type ToolResult,
 } from "./tools";
-export type { ContactFlow, DuskMetadata, DuskUIMessage, PageContext } from "./types";
+export type { ContactFlow, DuskMetadata, DuskUIMessage, PageContext, Source } from "./types";

@@ -4,6 +4,8 @@ import { z } from "zod";
 import { SECTION_IDS } from "@/features/content";
 import { loadSite } from "@/features/content/server";
 import { clientIp, createRateLimiter, type RateLimiter } from "@/lib/rate-limit";
+import { liveResponse } from "./live-agent";
+import { type LiveModel, liveModel } from "./model";
 import { type Lookup, respondOffline } from "./offline-agent";
 import { ragIndex } from "./rag/load-index";
 import { retrieveLexical } from "./rag/retrieve";
@@ -55,6 +57,8 @@ export type ChatDeps = {
   limiter: RateLimiter;
   record: () => Promise<AgentRecord>;
   index: () => Promise<RagIndex>;
+  /** The Gemini model, or null to answer offline */
+  live: () => LiveModel | null;
   now: () => number;
 };
 
@@ -76,6 +80,7 @@ export const defaultChatDeps: ChatDeps = {
   limiter: chatLimiter,
   record: siteRecord,
   index: ragIndex,
+  live: () => liveModel(),
   now: Date.now,
 };
 
@@ -104,7 +109,10 @@ export function currentFlow(messages: ChatBody["messages"]): ContactFlow | null 
   return parsed.success ? parsed.data : null;
 }
 
-/** POST /api/chat. P6 answers with the offline agent; P8 adds Gemini in front of it. */
+/**
+ * POST /api/chat. Gemini answers when a key is set and the free tier has room; the offline agent
+ * answers otherwise, when the model fails, and while its own contact flow is under way.
+ */
 export async function handleChat(request: Request, deps: ChatDeps = defaultChatDeps) {
   const raw = await request.text();
   if (raw.length > MAX_BODY_CHARS) return error(413, "too_large", "The conversation is too long.");
@@ -141,6 +149,21 @@ export async function handleChat(request: Request, deps: ChatDeps = defaultChatD
     const found = retrieveLexical(index, q, context);
     return found.lowConfidence ? null : (found.hits[0]?.chunk ?? null);
   };
-  const reply = respondOffline(text, currentFlow(messages), record, lookup);
-  return replyResponse(reply, "offline");
+  const flow = currentFlow(messages);
+  const offline = () => respondOffline(text, flow, record, lookup);
+
+  // A contact flow the offline agent started stays with it, so the steps can't contradict each other
+  const live = flow ? null : deps.live();
+  if (!live) return replyResponse(offline(), "offline");
+
+  return liveResponse({
+    ...live,
+    messages,
+    question: text,
+    context,
+    record,
+    index,
+    fallback: offline,
+    abortSignal: request.signal,
+  });
 }

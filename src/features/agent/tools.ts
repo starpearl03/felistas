@@ -1,5 +1,6 @@
-// The tools Dusk can call, shared by the client (which runs them on the command bus) and the server
-// (which declares them to the model in P8). Enums come from content, so ids can't be invented.
+// The tools Dusk can call. The server declares them to the model and answers each call; the client
+// mirrors every call on the command bus, so the page moves exactly as the matching click would.
+// Enums come from content, so ids can't be invented.
 import { z } from "zod";
 import { SECTION_IDS, type SectionId } from "@/features/content";
 import { MOTION_LEVELS, type Motion } from "@/features/stage";
@@ -24,7 +25,7 @@ export function toolInputSchemas(ids: ToolIds) {
   };
 }
 
-/** What the model is told each tool does (P8). */
+/** What the model is told each tool does. */
 export const TOOL_DESCRIPTIONS: Record<ToolName, string> = {
   navigate: "Scroll the page to a section.",
   open_project: "Show one project in the Projects section.",
@@ -51,5 +52,18 @@ export type ToolCall = {
   [K in ToolName]: { name: K; input: ToolInputs[K] };
 }[ToolName];
 
-/** Every client tool reports whether it ran. */
+/** Every page tool reports whether it ran. */
 export type ToolResult = { ok: boolean };
+
+/** The one tool that runs only on the server: another search of the record. */
+export const SEARCH_TOOL = "search_record";
+export const SEARCH_DESCRIPTION =
+  "Search the record again, for a follow-up or a part of the question the sources don't cover. Returns more numbered sources to cite.";
+export type SearchResult = {
+  found: number;
+  /** The new numbered sources, as the model reads them */
+  sources: string;
+};
+
+/** Every tool name that can appear in a reply. */
+export type AnyToolName = ToolName | typeof SEARCH_TOOL;
