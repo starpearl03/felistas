@@ -1,0 +1,48 @@
+name: main-guard
+
+# GitHub Free has no branch protection on private repos. This job fails visibly when a commit
+# lands on main without coming from a merged pull request.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      # The one-time bootstrap push; everything after it must come from a PR
+      BOOTSTRAP_SHA: c2c26c47421c2644d282771c22a878ef38030e38
+    steps:
+      - name: Every new commit on main belongs to a merged PR
+        run: |
+          set -eu
+          shas=$(jq -r '.commits[].id' "$GITHUB_EVENT_PATH")
+          if [ -z "$shas" ]; then
+            echo "No new commits in this push."
+            exit 0
+          fi
+          failed=0
+          for sha in $shas; do
+            case "$sha" in "$BOOTSTRAP_SHA"*) echo "skip bootstrap $sha"; continue ;; esac
+            merged=0
+            for attempt in 1 2 3 4 5; do
+              merged=$(gh api "repos/$REPO/commits/$sha/pulls" --jq '[.[] | select(.merged_at != null)] | length')
+              [ "$merged" -gt 0 ] && break
+              sleep 10
+            done
+            if [ "$merged" -gt 0 ]; then
+              echo "ok      $sha came from a merged PR"
+            else
+              echo "::error::$sha was pushed to main without a merged PR"
+              failed=1
+            fi
+          done
+          exit $failed
