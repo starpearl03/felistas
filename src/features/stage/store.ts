@@ -10,6 +10,8 @@ export type StageState = {
   projectId: string | null;
   /** Selected role slug; null means the current role */
   roleSlug: string | null;
+  /** A word to spell briefly in the glyph field; `id` changes on every request */
+  flash: { word: string; ms: number; id: number } | null;
 };
 
 /** What the server renders; the client reconciles after hydration. */
@@ -18,6 +20,7 @@ export const INITIAL_STAGE_STATE: StageState = {
   section: "home",
   projectId: null,
   roleSlug: null,
+  flash: null,
 };
 
 export const stageStore = createStore<StageState>(INITIAL_STAGE_STATE);

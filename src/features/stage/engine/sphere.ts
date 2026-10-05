@@ -54,6 +54,11 @@ export class GlyphSphere {
     return this.current;
   }
 
+  /** The sphere's canvas surface, shared with overlays drawn after it (thread, flying headings) */
+  get context(): CanvasRenderingContext2D | null {
+    return this.surface?.ctx ?? null;
+  }
+
   /** Dispatch and combine: the points fly apart and re-form as the new shape. `instant` skips the burst. */
   setShape(name: ShapeName, instant = false): void {
     if (name === this.current) return;

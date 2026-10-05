@@ -64,6 +64,16 @@ export const SHAPES: Record<ShapeName, ShapeFn> = {
   },
 };
 
+/** The form the sphere takes in each section (UI-SPEC §5). */
+export const SECTION_SHAPES = {
+  home: "sphere",
+  about: "torus",
+  projects: "cube",
+  experience: "helix",
+  education: "ring",
+  contact: "sphere",
+} as const satisfies Record<string, ShapeName>;
+
 export const BURST_DECAY = 0.972;
 
 /** One frame of burst decay; snaps to 0 once negligible. */

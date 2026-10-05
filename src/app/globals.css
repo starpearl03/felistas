@@ -104,6 +104,15 @@
     position: relative;
     max-width: 1060px;
   }
+  /* Headings fly out of the sphere: hidden until their letters land, then fade in (UI-SPEC §5.3) */
+  [data-fly] {
+    transition: opacity 0.45s ease;
+  }
+  [data-fly].flying {
+    opacity: 0;
+    transition: none;
+  }
+
   .panel :is(p, h2, h3, li, dd) {
     text-shadow:
       0 0 22px rgba(var(--bg-rgb), 0.9),

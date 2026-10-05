@@ -29,6 +29,13 @@ export function navigate(section: SectionId): boolean {
   return true;
 }
 
+let flashId = 0;
+
+/** Spells a word in the glyph field for `ms`, then the name returns (UI-SPEC §4). */
+export function flashWord(word: string, ms: number): void {
+  stageStore.set({ flash: { word: word.toUpperCase().slice(0, 12), ms, id: ++flashId } });
+}
+
 export function selectProject(id: string): void {
   stageStore.set({ projectId: id });
 }
