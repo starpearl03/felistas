@@ -13,11 +13,12 @@ import { SECTION_SHAPES, SHAPE_NAMES } from "@/features/stage/engine/shapes";
 import { nextThreadAlpha, threadPoint } from "@/features/stage/engine/thread";
 
 describe("section shapes", () => {
-  it("gives every section a known form, starting and ending on the sphere", () => {
+  it("gives every section a form of its own, starting on the sphere", () => {
     for (const id of SECTION_IDS) expect(SHAPE_NAMES).toContain(SECTION_SHAPES[id]);
+    expect(new Set(Object.values(SECTION_SHAPES)).size).toBe(SECTION_IDS.length);
     expect(SECTION_SHAPES.home).toBe("sphere");
-    expect(SECTION_SHAPES.contact).toBe("sphere");
     expect(SECTION_SHAPES.projects).toBe("cube");
+    expect(SECTION_SHAPES.contact).toBe("letter");
   });
 });
 

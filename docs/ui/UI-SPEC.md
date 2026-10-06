@@ -125,14 +125,14 @@ The prototype implements this as `class Sphere`.
   - _speaking_: a ripple runs through the points, `radius × (1 + speak × .05 × sin(y × 7 + t × .008))`.
 - **Shapes per section ("dispatch and combine").** Whenever the current section changes, every point gets a new target. The points burst outward and then recombine into the new form:
 
-  | Section    | Shape            |
-  | ---------- | ---------------- |
-  | home       | sphere           |
-  | about      | torus            |
-  | projects   | cube surface     |
-  | experience | double helix     |
-  | education  | three flat rings |
-  | contact    | sphere           |
+  | Section    | Shape             |
+  | ---------- | ----------------- |
+  | home       | sphere            |
+  | about      | torus             |
+  | projects   | cube surface      |
+  | experience | double helix      |
+  | education  | three flat rings  |
+  | contact    | envelope (letter) |
   - Each point eases toward its target at its own speed (0.025–0.075 per frame).
   - `burst` starts at 1 and decays ×0.972 per frame. The outward push is `1 + sin(π(1 − burst)) × j × .85`, where `j` is a per-point random value in .5–1.6. Alpha dips by up to 35% during the burst.
   - The shape name shows under the companion's name as `form · helix` (mono, 10px, accent).

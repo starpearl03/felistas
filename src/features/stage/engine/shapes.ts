@@ -1,6 +1,6 @@
 // The sphere's forms and the "dispatch and combine" burst (UI-SPEC §5). Pure, so it is unit-tested.
 
-export const SHAPE_NAMES = ["sphere", "torus", "cube", "helix", "ring"] as const;
+export const SHAPE_NAMES = ["sphere", "torus", "cube", "helix", "ring", "letter"] as const;
 
 export type ShapeName = (typeof SHAPE_NAMES)[number];
 
@@ -9,6 +9,24 @@ export type Vec3 = readonly [number, number, number];
 type ShapeFn = (i: number, n: number) => Vec3;
 
 const TAU = Math.PI * 2;
+
+/** An envelope's outline: the four edges, then the flap folded down to the middle. */
+const LETTER_W = 0.82;
+const LETTER_H = 0.54;
+const LETTER_TIP: readonly [number, number] = [0, 0.04];
+const LETTER_PATH: readonly (readonly [number, number])[] = [
+  [-LETTER_W, LETTER_H],
+  [LETTER_W, LETTER_H],
+  [LETTER_W, -LETTER_H],
+  [-LETTER_W, -LETTER_H],
+  [-LETTER_W, LETTER_H],
+  LETTER_TIP,
+  [LETTER_W, LETTER_H],
+];
+const LETTER_LENGTHS = LETTER_PATH.slice(1).map((p, k) =>
+  Math.hypot(p[0] - LETTER_PATH[k][0], p[1] - LETTER_PATH[k][1]),
+);
+const LETTER_TOTAL = LETTER_LENGTHS.reduce((a, b) => a + b, 0);
 
 export const SHAPES: Record<ShapeName, ShapeFn> = {
   // Fibonacci sphere
@@ -62,6 +80,19 @@ export const SHAPES: Record<ShapeName, ShapeFn> = {
     const r = 0.55 + band * 0.18;
     return [Math.cos(a) * r, (band - 1) * 0.06, Math.sin(a) * r];
   },
+  // An envelope for the contact letter: its outline and folded flap, on two thin layers so it
+  // still reads when it turns edge-on
+  letter: (i, n) => {
+    const layer = i % 2;
+    const half = Math.ceil(n / 2);
+    let d = (Math.floor(i / 2) / half) * LETTER_TOTAL;
+    let k = 0;
+    while (k < LETTER_LENGTHS.length - 1 && d > LETTER_LENGTHS[k]) d -= LETTER_LENGTHS[k++];
+    const [x0, y0] = LETTER_PATH[k];
+    const [x1, y1] = LETTER_PATH[k + 1];
+    const t = Math.min(1, d / LETTER_LENGTHS[k]);
+    return [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, layer ? 0.07 : -0.07];
+  },
 };
 
 /** The form the sphere takes in each section (UI-SPEC §5). */
@@ -71,7 +102,7 @@ export const SECTION_SHAPES = {
   projects: "cube",
   experience: "helix",
   education: "ring",
-  contact: "sphere",
+  contact: "letter",
 } as const satisfies Record<string, ShapeName>;
 
 export const BURST_DECAY = 0.972;

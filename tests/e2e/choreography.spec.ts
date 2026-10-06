@@ -40,7 +40,7 @@ test.describe("on lively", () => {
       ["about", "torus"],
       ["experience", "helix"],
       ["education", "ring"],
-      ["contact", "sphere"],
+      ["contact", "letter"],
     ]) {
       await goTo(page, id);
       await expect(stage(page)).toHaveAttribute("data-shape", shape);
