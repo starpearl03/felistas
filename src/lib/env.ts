@@ -19,6 +19,8 @@ export const envSchema = z.object({
   RESUME_URL: optional.pipe(z.url({ protocol: /^https$/ }).optional()),
   /** Google Search Console's HTML-tag verification code, if the site is verified that way */
   GOOGLE_SITE_VERIFICATION: optional,
+  /** Bing Webmaster Tools' meta-tag (msvalidate.01) verification code */
+  BING_SITE_VERIFICATION: optional,
   // Not validated here: a bad value must not break the build. resolveSiteUrl() checks it and falls back.
   NEXT_PUBLIC_SITE_URL: optional,
 });

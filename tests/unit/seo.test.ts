@@ -45,7 +45,10 @@ describe("search metadata", () => {
 
   it("adds the Search Console code only when there is one", () => {
     expect(siteMetadata(site, base).verification).toBeUndefined();
-    expect(siteMetadata(site, base, "abc").verification).toEqual({ google: "abc" });
+    expect(siteMetadata(site, base, { google: "abc" }).verification).toEqual({ google: "abc" });
+    expect(siteMetadata(site, base, { bing: "xyz" }).verification).toEqual({
+      other: { "msvalidate.01": "xyz" },
+    });
   });
 });
 

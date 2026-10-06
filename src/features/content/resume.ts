@@ -13,6 +13,8 @@ export type ResumeMeta = {
   size?: string;
   /** e.g. "Oct 2026" */
   updated?: string;
+  /** ISO date of the last change, for the sitemap */
+  changedAt?: string;
 };
 
 /** "271 KB", or "1.2 MB" from a megabyte up. */
@@ -71,9 +73,10 @@ export const resumeMeta = cache(async (source: string | undefined): Promise<Resu
     const res = await fetchResume(source);
     const bytes = (await res.arrayBuffer()).byteLength;
     const changed = await lastChanged(source, res).catch(() => null);
+    const valid = changed && !Number.isNaN(changed.getTime()) ? changed : null;
     return {
       size: formatSize(bytes),
-      updated: changed && !Number.isNaN(changed.getTime()) ? formatMonth(changed) : undefined,
+      ...(valid ? { updated: formatMonth(valid), changedAt: valid.toISOString() } : {}),
     };
   } catch {
     return {};

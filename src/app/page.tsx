@@ -21,7 +21,8 @@ export default async function Home() {
       available: resume.available,
       href: resume.href,
       file: resume.file,
-      ...meta,
+      size: meta.size,
+      updated: meta.updated,
     },
     projects: site.projects.map(({ id, name }) => ({ id, name })),
     ids: {
