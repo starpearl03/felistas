@@ -77,3 +77,17 @@ test.describe("with reduced motion", () => {
     await expect.poll(() => fingerprint(page), { timeout: 3000 }).not.toBe(start);
   });
 });
+
+test("a click on the background sends a shockwave; controls and Still do not", async ({ page }) => {
+  await page.goto("/");
+  await expect(stage(page)).toHaveAttribute("data-motion", "lively");
+  // the empty sky of the intro: below the top bar, above the copy, at the right edge
+  const { width } = page.viewportSize() ?? { width: 0 };
+  const sky = { x: width - 16, y: 130 };
+  await page.mouse.click(sky.x, sky.y);
+  await expect(stage(page)).toHaveAttribute("data-ripple", "1");
+
+  await page.getByRole("button", { name: "still" }).click();
+  await page.mouse.click(sky.x, sky.y);
+  await expect(stage(page)).toHaveAttribute("data-ripple", "1");
+});
