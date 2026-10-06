@@ -17,6 +17,13 @@
   --col: clamp(340px, 30vw, 440px);
 }
 
+/* Tablets and unfolded phones: a narrower column, so the page keeps room (mirrors columnWidth) */
+@media (max-width: 899.98px) {
+  :root {
+    --col: clamp(230px, 34vw, 340px);
+  }
+}
+
 @theme inline {
   --color-bg: var(--bg);
   --color-fg: var(--fg);
@@ -34,8 +41,10 @@
 }
 
 @theme {
-  /* At 900px and up the companion is a column; below it becomes a bottom sheet (UI-SPEC §9) */
-  --breakpoint-desk: 56.25rem;
+  /* From 600px the companion is a column beside the page; below it, phones get the chat-first view
+     (UI-SPEC §9). From 900px the sections use their two-column layouts. */
+  --breakpoint-desk: 37.5rem;
+  --breakpoint-wide: 56.25rem;
 
   --animate-rise: rise 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
   --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;

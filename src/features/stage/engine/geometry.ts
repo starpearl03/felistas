@@ -1,17 +1,20 @@
 // Stage layout maths (UI-SPEC §4, §5.1). Pure functions of the viewport, so they are unit-tested.
 import { clamp, lerp, smoothstep } from "@/lib/math";
 
-/** Below this width the companion column becomes a bottom sheet. Mirrors the `desk` breakpoint in CSS. */
-export const DESK_MIN_WIDTH = 900;
+/** Below this width phones get the chat-first view. Mirrors the `desk` breakpoint in CSS. */
+export const DESK_MIN_WIDTH = 600;
+/** From this width the column reaches its full size. Mirrors the `wide` breakpoint in CSS. */
+export const WIDE_MIN_WIDTH = 900;
 
 export type Circle = { x: number; y: number; R: number };
 
 /** A box that a word is fitted into, centred on (x, y). */
 export type Placement = { x: number; y: number; w: number; h: number };
 
-/** Mirrors `--col: clamp(340px, 30vw, 440px)`; zero on phones. */
+/** Mirrors `--col` in globals.css: narrower on tablets, zero on phones. */
 export function columnWidth(W: number): number {
-  return W < DESK_MIN_WIDTH ? 0 : clamp(W * 0.3, 340, 440);
+  if (W < DESK_MIN_WIDTH) return 0;
+  return W < WIDE_MIN_WIDTH ? clamp(W * 0.34, 230, 340) : clamp(W * 0.3, 340, 440);
 }
 
 /** The large sphere on the first screen. */

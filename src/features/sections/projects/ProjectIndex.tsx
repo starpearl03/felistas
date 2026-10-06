@@ -23,7 +23,7 @@ export function ProjectIndex({ projects }: { projects: ProjectSummary[] }) {
   };
 
   return (
-    <div className="mt-[34px] grid items-start gap-[clamp(24px,4vw,64px)] desk:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+    <div className="mt-[34px] grid items-start gap-[clamp(24px,4vw,64px)] wide:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
       <div className="grid" role="list" aria-label="Projects">
         {projects.map((p) => {
           const on = p.id === selected.id;
@@ -67,7 +67,7 @@ export function ProjectIndex({ projects }: { projects: ProjectSummary[] }) {
       <div
         id="project-detail"
         aria-live="polite"
-        className="grid gap-4 desk:sticky desk:top-[110px]"
+        className="grid gap-4 wide:sticky wide:top-[110px]"
       >
         <span className="font-mono text-[11px] tracking-[.12em] text-acc uppercase">
           {selected.kind} · {PROJECT_STATUS[selected.status].detail}

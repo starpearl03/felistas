@@ -1,6 +1,7 @@
 import type { Source } from "@/features/agent";
 import { closeChat, navigate, openProject, openRole } from "@/features/stage";
 import type { CompanionConfig } from "../config";
+import { isPhone } from "../phone";
 
 /**
  * The passages a live answer cited, e.g. "Projects · Ledgerline". Each opens where it lives through
@@ -10,7 +11,7 @@ import type { CompanionConfig } from "../config";
 export function SourceChips({ sources, config }: { sources: Source[]; config: CompanionConfig }) {
   const open = (s: Source) => {
     // Moving the page folds the phone sheet, as it does for Dusk's tools
-    if (window.innerWidth < 900) closeChat();
+    if (isPhone()) closeChat();
     if (s.section === "projects" && s.entityId) {
       openProject(s.entityId, config.projects.find((p) => p.id === s.entityId)?.name);
     } else if (s.section === "experience" && s.entityId) openRole(s.entityId);

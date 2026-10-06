@@ -12,7 +12,11 @@ import {
 describe("columnWidth", () => {
   it("mirrors clamp(340px, 30vw, 440px) and is zero on phones", () => {
     expect(columnWidth(390)).toBe(0);
-    expect(columnWidth(899)).toBe(0);
+    expect(columnWidth(599)).toBe(0);
+    // tablets and unfolded phones: a narrower column
+    expect(columnWidth(600)).toBe(230);
+    expect(columnWidth(768)).toBeCloseTo(768 * 0.34);
+    expect(columnWidth(899)).toBeLessThanOrEqual(340);
     expect(columnWidth(1000)).toBe(340);
     expect(columnWidth(1440)).toBe(432);
     expect(columnWidth(2560)).toBe(440);

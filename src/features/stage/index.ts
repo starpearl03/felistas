@@ -16,6 +16,7 @@ export {
   showDraft,
   toast,
 } from "./commands";
+export { DESK_MIN_WIDTH } from "./engine/geometry";
 export { MOTION, MOTION_LEVELS, type Motion } from "./motion";
 export { MotionSwitch } from "./MotionSwitch";
 export { SectionNav } from "./SectionNav";

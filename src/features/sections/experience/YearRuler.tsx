@@ -89,7 +89,7 @@ export function YearRuler({ roles, from, to }: YearRulerProps) {
               inert={!on}
               aria-hidden={!on}
               className={cn(
-                "grid items-start gap-[clamp(20px,4vw,56px)] [grid-area:1/1] desk:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]",
+                "grid items-start gap-[clamp(20px,4vw,56px)] [grid-area:1/1] wide:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]",
                 !on && "invisible",
               )}
             >

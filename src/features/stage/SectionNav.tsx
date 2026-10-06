@@ -5,12 +5,12 @@ import { cn } from "@/lib/cn";
 import { navigate } from "./commands";
 import { useStage } from "./use-stage";
 
-/** Section links in the top bar. The active one is underlined; hidden on phones. */
+/** Section links in the top bar. The active one is underlined; shown from 800px, where they fit. */
 export function SectionNav() {
   const section = useStage((s) => s.section);
 
   return (
-    <nav aria-label="Sections" className="hidden gap-1 desk:flex">
+    <nav aria-label="Sections" className="hidden gap-1 min-[800px]:flex">
       {SECTIONS.slice(1).map(({ id, label }) => (
         <button
           key={id}
