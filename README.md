@@ -111,7 +111,7 @@ content/                  Markdown + frontmatter: profile, skills, projects, exp
 scripts/                  build-rag-index.ts, rag-eval.ts
 src/app/                  layout, page, metadata routes, api/chat, api/contact
 src/features/content/     zod schemas + server-only loader
-src/features/stage/       animation engine (glyph field, sphere, flights, thread), store, command bus
+src/features/stage/       animation engine (glyph field, sphere, flights, glyph streams, ripples), store, command bus
 src/features/sections/    Intro, About, Projects, Experience, Education, Contact
 src/features/companion/   Dusk chat UI: messages, tool lines, resume/draft cards, source chips
 src/features/agent/       tools, system prompt, hybrid retrieval, offline agent, rate limit
