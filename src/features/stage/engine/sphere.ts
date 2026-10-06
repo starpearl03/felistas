@@ -1,5 +1,4 @@
 // Dusk, the glyph sphere (UI-SPEC §5). Port of `class Sphere` in docs/ui/Felistas Dusk.html.
-// The thread to the current section arrives in P4.
 import { clamp, lerp, pick } from "@/lib/math";
 import type { MotionParams } from "../motion";
 import { type FontFamilies, fitCanvas, type Surface } from "./canvas";
@@ -33,6 +32,9 @@ export class GlyphSphere {
   private burst = 0;
   private lastSwap = 0;
   private current: ShapeName = "sphere";
+  /** Last frame's screen x, y, depth (0 back .. 1 front) and glyph size of every point */
+  private screen: Float32Array;
+  private drawn = false;
 
   /** Cursor direction relative to the sphere, roughly -1..1 on each axis; null when the cursor is away */
   gaze: { x: number; y: number } | null = null;
@@ -48,6 +50,35 @@ export class GlyphSphere {
       const [x, y, z] = SHAPES.sphere(i, count);
       return { x, y, z, tx: x, ty: y, tz: z, s: 0.04, j: 1, ch: pick(GLYPHS, rand) };
     });
+    this.screen = new Float32Array(count * 4);
+  }
+
+  /**
+   * A glyph from the lit front of the sphere, preferring the side nearest `toward`, as it was drawn
+   * last frame. The streams lift these off the sphere. Null before the first frame.
+   */
+  sample(toward: {
+    x: number;
+    y: number;
+  }): { x: number; y: number; ch: string; size: number } | null {
+    if (!this.drawn) return null;
+    let best = -1;
+    let bestScore = -Infinity;
+    for (let k = 0; k < 8; k++) {
+      const i = Math.floor(this.rand() * this.count);
+      const depth = this.screen[i * 4 + 2];
+      if (depth < 0.5) continue;
+      const dx = toward.x - this.screen[i * 4];
+      const dy = toward.y - this.screen[i * 4 + 1];
+      const score = depth * 40 - Math.hypot(dx, dy) * 0.25;
+      if (score > bestScore) {
+        bestScore = score;
+        best = i;
+      }
+    }
+    if (best < 0) return null;
+    const s = this.screen;
+    return { x: s[best * 4], y: s[best * 4 + 1], size: s[best * 4 + 3], ch: this.points[best].ch };
   }
 
   get shape(): ShapeName {
@@ -132,7 +163,10 @@ export class GlyphSphere {
     ctx.textBaseline = "middle";
     let lastSize = 0;
 
-    for (const p of this.points) {
+    const screen = this.screen;
+    this.drawn = true;
+    for (let i = 0; i < this.points.length; i++) {
+      const p = this.points[i];
       p.x += (p.tx - p.x) * p.s;
       p.y += (p.ty - p.y) * p.s;
       p.z += (p.tz - p.z) * p.s;
@@ -146,15 +180,19 @@ export class GlyphSphere {
       const alpha = (0.12 + depth * 0.82) * (1 - spread * 0.35);
       const X = cx + x1 * R * ripple;
       const Y = cy + y1 * R * ripple;
+      const glyphSize = Math.max(6, Math.round((R / 13) * (0.5 + depth * 0.65)));
+      screen[i * 4] = X;
+      screen[i * 4 + 1] = Y;
+      screen[i * 4 + 2] = depth;
+      screen[i * 4 + 3] = glyphSize;
       ctx.fillStyle = rgba(colour, Number(alpha.toFixed(2)));
       if (small) {
         const s = 0.9 + depth * 1.3;
         ctx.fillRect(X - s / 2, Y - s / 2, s, s);
       } else {
-        const size = Math.max(6, Math.round((R / 13) * (0.5 + depth * 0.65)));
-        if (size !== lastSize) {
-          ctx.font = `${size}px ${this.fonts.mono}`;
-          lastSize = size;
+        if (glyphSize !== lastSize) {
+          ctx.font = `${glyphSize}px ${this.fonts.mono}`;
+          lastSize = glyphSize;
         }
         ctx.fillText(p.ch, X, Y);
       }

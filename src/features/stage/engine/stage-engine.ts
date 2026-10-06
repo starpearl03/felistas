@@ -1,10 +1,10 @@
-// Wires the glyph field, the sphere, the thread and the heading flights to the page. Runs outside React:
+// Wires the glyph field, the sphere, the glyph streams and the heading flights to the page. Runs outside React:
 // state lives here and in the stage store, and React never re-renders per frame.
 //
 // It finds its page hooks by data attribute inside the stage root:
 //   [data-scroller]  the snap scroller      [data-sec]       each section
 //   [data-veil]      dims the field         [data-progress]  the scroll progress line
-//   [data-anchor]    where the thread lands [data-fly]       a heading that flies out of the sphere
+//   [data-anchor]    where the streams land [data-fly]       a heading that flies out of the sphere
 import { SECTION_IDS, type SectionId } from "@/features/content";
 import { clamp, lerp } from "@/lib/math";
 import { MOTION } from "../motion";
@@ -29,7 +29,8 @@ import { PALETTE } from "./palette";
 import { SECTION_SHAPES } from "./shapes";
 import { isBackgroundTarget } from "./ripple";
 import { GlyphSphere } from "./sphere";
-import { drawThread, nextThreadAlpha } from "./thread";
+import { GlyphStreams } from "./streams";
+import { nextThreadAlpha } from "./thread";
 
 export type StageEngine = { destroy(): void };
 
@@ -64,6 +65,7 @@ export function createStageEngine({
   const field = new GlyphField(glyphCanvas, fonts);
   const sphere = new GlyphSphere(sphereCanvas, fonts, window.innerWidth < 700 ? 240 : 380);
   const flights = new Flights();
+  const streams = new GlyphStreams();
   const scroller = root.querySelector<HTMLElement>("[data-scroller]");
   const veil = root.querySelector<HTMLElement>("[data-veil]");
   const progress = root.querySelector<HTMLElement>("[data-progress]");
@@ -202,7 +204,7 @@ export function createStageEngine({
     const ctx = sphere.context;
     if (!ctx) return;
 
-    // Thread: desktop only, once docked, to the eyebrow of the section in view (UI-SPEC §5.2)
+    // Glyph streams: desktop only, once docked, to the eyebrow of the section in view (UI-SPEC §5.2)
     const anchorPoint = (id: SectionId | null) => {
       const anchor = id && id !== "home" && columnWidth(W) ? anchorOf(id) : null;
       if (!anchor) return null;
@@ -219,7 +221,19 @@ export function createStageEngine({
     }
     thread.alpha = nextThreadAlpha(thread.alpha, visible);
     const target = anchorPoint(thread.section);
-    if (target) drawThread(ctx, t, geo, target, thread.alpha, fonts.mono);
+    if (target) {
+      const label = (thread.section && anchorOf(thread.section)?.firstChild?.textContent) || "";
+      streams.draw(ctx, t, {
+        geo,
+        target,
+        alpha: thread.alpha,
+        shape: sphere.shape,
+        motion: stageStore.get().motion,
+        label: label.trim().toUpperCase(),
+        mono: fonts.mono,
+        sample: () => sphere.sample(target),
+      });
+    }
 
     flights.draw(ctx, t, geo, origin);
   };

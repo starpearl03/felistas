@@ -18,7 +18,7 @@ A portfolio for Felistas, a software engineer, that feels like talking to a calm
 
 - **One continuous dark field.** The whole page sits on a live field of monospace glyphs (a "Matrix" texture, but calm). Nothing is boxed off: there are no panels, cards or dividers between the AI and the content.
 - **The Glyphsphere.** A rotating 3D sphere made of the same glyphs is the AI companion, called **Dusk**. It is huge on the first screen, then settles at the top of the left column and stays large. It looks at the cursor, pulses when it speaks, and changes shape for every section.
-- **The page comes out of the sphere.** A faint thread runs from the sphere to the section in view, and each section heading flies out of the sphere letter by letter.
+- **The page comes out of the sphere.** Glyphs stream off the sphere into the label of the section in view, and each section heading flies out of the sphere letter by letter.
 - **The AI is a real tool.** Visitors can ask about Felistas, download the resume, jump to a section, or leave a message. Recruiters and developers should be able to do everything through the chat.
 
 Tone: calm, cinematic, precise. It should impress developers but never blind or overwhelm. Motion has three levels and visitors choose.
@@ -82,7 +82,7 @@ Headings use `text-wrap: balance`. In `next/font`, every family is exposed as a 
 2. **Veil**: a `--bg` layer whose opacity is `k × 0.38`, where `k` is the eased intro-to-content scroll progress (§5.1). It dims the field once you leave the intro without hiding it.
 3. **Content scroller**: right of the column, with vertical **mandatory scroll snap**, one section per screen (`min-height: 100%`).
 4. **Companion column**: no background panel and no border. Only a horizontal gradient, `rgba(bg,.9) 0% → rgba(bg,.78) 62% → transparent 100%`, so the glyphs show through behind the chat.
-5. **Sphere canvas**: full viewport with `pointer-events: none`. It draws the sphere, the thread and the flying heading letters.
+5. **Sphere canvas**: full viewport with `pointer-events: none`. It draws the sphere, the glyph streams and the flying heading letters.
 6. **Top bar**: transparent, no band. It holds the brand `felistas.dev` (mono, `.dev` muted), the section nav (13px; the active item gets a 1px accent underline), the Motion switch (`Still / Calm / Lively`), and a 1px accent scroll-progress line along the very top.
 7. Toasts.
 
@@ -149,14 +149,25 @@ Let `k = smoothstep(clamp(scrollTop / (viewportHeight × .6)))`.
   - The column's top padding (`--lift`) interpolates from `intro.y + Rh + H × .06` to `dock.y + Rd + 34`, so the conversation moves up under the sphere and gets taller.
 - **Mobile.** The intro sphere sits at `(W/2, H × .2)` with radius `min(W × .27, H × .13)`. It docks into the 40px slot in the bottom sheet header at radius 17.
 
-### 5.2 The thread
+### 5.2 Glyph streams
 
-When `k > .9` on desktop and the current section has an `[data-anchor]` eyebrow inside the viewport:
+When `k > .9` on desktop and the current section has an `[data-anchor]` eyebrow inside the viewport, glyphs leave the sphere and feed that eyebrow. There is no line.
 
-- A cubic Bézier runs from the sphere's right edge to just left of that eyebrow, in accent colour at alpha .42.
-- Three glyphs travel along it, cycling every ~5.5 s.
-- An accent dot (r 2.5) marks the end.
-- The thread fades in and out at 8% per frame.
+- Each glyph is lifted off the sphere: a lit, front-facing point on the side nearest the eyebrow, with its own character and size. It ends just left of the eyebrow.
+- The path follows the sphere's form (`streams.ts`):
+
+  | Form               | Path                                                                            |
+  | ------------------ | ------------------------------------------------------------------------------- |
+  | torus (About)      | spiral: three coils winding around the path                                     |
+  | cube (Projects)    | circuit: right-angle traces that hop forward in eight steps, like data on a bus |
+  | helix (Experience) | helix: two strands half a turn apart                                            |
+  | ring (Education)   | orbit: rides a flat ring around the sphere, then slingshots off its top         |
+  | letter (Contact)   | glide: a high arc, then a paper-plane descent with a little sway                |
+
+- Glyphs shrink to 11px and get a short two-copy tail. In the last fifth of the path they turn accent and decode into letters of the eyebrow's word.
+- An accent dot (r 2.5) marks the end and swells briefly as each glyph lands.
+- Lively emits every 70 ms (1.75 s flights), Calm every 110 ms (2.3 s). Still draws a few frozen glyphs along each path, with no motion.
+- The stream fades in and out at 8% per frame and finishes fading from one section before it starts on the next.
 
 ### 5.3 Headings fly out of the sphere
 
@@ -259,7 +270,7 @@ Pause the animation loop when `document.hidden`.
 
 ## 8. Sections
 
-Every section has an eyebrow (`Section / detail` in mono, accent first word), marked `data-anchor` for the thread. Every section sits on a radial scrim, `ellipse 70% 62% at 30% 52%` from `rgba(bg,.8)` to transparent at 85%, so the glyph field stays visible at the edges while text stays readable. Text also gets a bg-coloured glow (`0 0 22px` and `0 0 3px`).
+Every section has an eyebrow (`Section / detail` in mono, accent first word), marked `data-anchor` where the glyph streams land. Every section sits on a radial scrim, `ellipse 70% 62% at 30% 52%` from `rgba(bg,.8)` to transparent at 85%, so the glyph field stays visible at the edges while text stays readable. Text also gets a bg-coloured glow (`0 0 22px` and `0 0 3px`).
 
 **No cards and no boxed buttons anywhere.** Actions are **text links**: mono 12px uppercase, a 1px underline at 35% opacity that goes full on hover, and an arrow that nudges 4px. Primary actions are accent-coloured.
 
@@ -304,7 +315,7 @@ Every section has an eyebrow (`Section / detail` in mono, accent first word), ma
   - Asking anything or tapping an "Ask…" link expands the sheet. AI navigation collapses it.
 - The nav and the "Motion" label are hidden; the motion buttons stay.
 - Content panels get 200px of bottom padding, and every two-column layout stacks to one column.
-- The thread is not drawn on mobile.
+- The glyph streams are not drawn on mobile.
 
 ---
 
@@ -336,7 +347,7 @@ Every section has an eyebrow (`Section / detail` in mono, accent first word), ma
 - [ ] Scrolling glides the sphere to the top of the column while it stays large; the conversation rises and gets taller; there is no panel or divider.
 - [ ] Each section change makes the sphere burst and re-form into that section's shape, and the `form ·` label updates.
 - [ ] Each section heading flies out of the sphere, letter by letter, into place. Still mode shows it instantly.
-- [ ] A thread links the sphere to the current section's eyebrow.
+- [ ] Glyph streams, shaped by the sphere's form, feed the current section's eyebrow.
 - [ ] Projects: an index list with a live detail panel and glyph flash. Experience: a year ruler. Education: outlined years. Contact: the fill-in letter.
 - [ ] There are no cards and no boxed buttons.
 - [ ] The motion switch works, defaults to Lively and is remembered.
