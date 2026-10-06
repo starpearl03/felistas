@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ProjectStatus } from "./sections";
 
 // Frontmatter schemas for the files in content/. Objects are strict so a typo in a key fails the build
 // instead of silently disappearing from the site.
@@ -9,8 +10,12 @@ const sample = z.boolean().default(false);
 
 export const profileSchema = z.strictObject({
   sample,
+  /** The short name used across the page and by Dusk */
   name: text,
+  /** The name search engines and the page title use */
+  fullName: text,
   role: text,
+  location: text,
   line: text,
   availability: text,
   now: text,
@@ -25,6 +30,13 @@ export const profileSchema = z.strictObject({
     size: text,
     updated: text,
   }),
+  /** For search engines only: never rendered on the page or given to Dusk */
+  seo: z.strictObject({
+    /** Other spellings of the name people search for */
+    alternateNames: z.array(text).default([]),
+    /** Professions, skills and places the person should be found under */
+    keywords: z.array(text).default([]),
+  }),
 });
 
 export const skillsSchema = z.strictObject({
@@ -36,7 +48,8 @@ export const projectSchema = z.strictObject({
   sample,
   name: text,
   kind: text,
-  status: z.enum(["LIVE", "WIP"]),
+  /** LIVE: in use; DONE: finished; WIP: still being built */
+  status: z.enum(["LIVE", "DONE", "WIP"] satisfies ProjectStatus[]),
   year,
   order: z.number().int(),
   stack: z.array(text).min(1),

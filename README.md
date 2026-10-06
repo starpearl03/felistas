@@ -77,7 +77,7 @@ First-time e2e setup: `npx playwright install chromium`.
 Today:
 
 ```
-content/               all site content: Markdown + YAML frontmatter (currently sample: true)
+content/               all site content: Markdown + YAML frontmatter (the real record)
 docs/ui/               approved design: prototype + UI-SPEC.md
 public/resume/         felistas-resume.pdf (add the real file)
 src/app/               routes, root layout, global tokens

@@ -4,16 +4,18 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { SECTION_IDS } from "@/features/content";
 import { CONTENT_DIR, ContentError, loadSiteFrom } from "@/features/content/server";
+import { FIXTURE_CONTENT } from "../fixtures/paths";
 
 describe("the real content/ folder", () => {
   it("loads, validates and orders everything", async () => {
     const site = await loadSiteFrom(CONTENT_DIR);
 
     expect(site.profile.name).toBe("Felistas");
+    expect(site.profile.fullName).toBe("Felistas Charuka");
     expect(site.profile.about.length).toBeGreaterThan(0);
     expect(site.profile.line).not.toContain("*");
     expect(site.profile.lineParts.some((p) => p.em)).toBe(true);
-    expect(site.skills.groups.flatMap((g) => g.items)).toContain("Go");
+    expect(site.skills.groups.flatMap((g) => g.items).length).toBeGreaterThan(10);
 
     const projectIds = site.projects.map((p) => p.id);
     expect(new Set(projectIds).size).toBe(projectIds.length);
@@ -23,7 +25,7 @@ describe("the real content/ folder", () => {
 
     const starts = site.experience.map((r) => r.start);
     expect(starts).toEqual([...starts].sort((a, b) => a - b));
-    expect(site.experience.filter((r) => r.current)).toHaveLength(1);
+    expect(site.experience.filter((r) => r.current).length).toBeLessThanOrEqual(1);
     for (const role of site.experience) expect(role.end).toBeGreaterThan(role.start);
 
     expect(site.faq.length).toBeGreaterThan(0);
@@ -33,8 +35,17 @@ describe("the real content/ folder", () => {
     }
   });
 
-  it("is still marked as sample content", async () => {
-    expect((await loadSiteFrom(CONTENT_DIR)).sample).toBe(true);
+  it("is real content, not the sample placeholders", async () => {
+    expect((await loadSiteFrom(CONTENT_DIR)).sample).toBe(false);
+  });
+
+  it("keeps the middle name out of everything the page shows", async () => {
+    const site = await loadSiteFrom(CONTENT_DIR);
+    // only the seo block may carry it (search engines, never rendered)
+    const { seo, ...shown } = site.profile;
+    const visible = JSON.stringify({ ...site, profile: shown });
+    expect(visible).not.toMatch(/Varaidzo/i);
+    expect(seo.alternateNames.join(" ")).toMatch(/Varaidzo/);
   });
 });
 
@@ -50,7 +61,7 @@ describe("validation errors name the file", () => {
 
   beforeEach(async () => {
     dir = await mkdtemp(path.join(tmpdir(), "felistas-content-"));
-    await cp(CONTENT_DIR, dir, { recursive: true });
+    await cp(FIXTURE_CONTENT, dir, { recursive: true });
   });
 
   afterEach(async () => {
@@ -94,15 +105,16 @@ describe("validation errors name the file", () => {
       "---\nrole: R\norg: O\nperiod: P\nstart: 2025\nend: 2026\ncurrent: true\npoints: [x]\n---\n",
     );
     await expect(loadSiteFrom(dir)).rejects.toThrow(
-      /exactly one role must have current: true, found 2/,
+      /at most one role may have current: true, found 2/,
     );
   });
 
-  it("rejects content with no current role", async () => {
+  it("accepts content with no current role (between jobs)", async () => {
     const rel = "experience/northwind-labs.md";
     const text = await readFile(path.join(dir, rel), "utf8");
     await write(rel, text.replace(/^current: true\n/m, ""));
-    await expect(loadSiteFrom(dir)).rejects.toThrow(/found 0/);
+    const site = await loadSiteFrom(dir);
+    expect(site.experience.some((r) => r.current)).toBe(false);
   });
 
   it("reports the real cause when a path exists but cannot be read as a file", async () => {

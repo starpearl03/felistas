@@ -17,14 +17,15 @@ import {
   numberSources,
   type RagIndex,
 } from "@/features/agent/server";
-import { CONTENT_DIR, loadSiteFrom } from "@/features/content/server";
+import { loadSiteFrom } from "@/features/content/server";
+import { FIXTURE_CONTENT } from "../fixtures/paths";
 import { createRateLimiter } from "@/lib/rate-limit";
 
 let record: AgentRecord;
 let index: RagIndex;
 
 beforeAll(async () => {
-  const site = await loadSiteFrom(CONTENT_DIR);
+  const site = await loadSiteFrom(FIXTURE_CONTENT);
   record = buildRecord(site);
   index = buildIndex(buildChunks(site), site.profile.name);
 });

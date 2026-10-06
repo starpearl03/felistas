@@ -1,18 +1,21 @@
 ---
-sample: true
 groups:
   - name: Languages
-    items: [Go, TypeScript, Python, Rust, SQL]
-  - name: Systems
-    items: [PostgreSQL, Kafka, Redis, gRPC, Kubernetes]
-  - name: AI
-    items: [Gemini API, RAG, pgvector, Evals]
-  - name: Frontend
-    items: [React, Next.js, Astro]
+    items: [TypeScript, JavaScript, Python, Java, PHP, SQL, C, HTML and CSS]
+  - name: Frameworks
+    items: [Next.js, React, FastAPI, Spring Boot, Laravel, CodeIgniter, Ionic, WordPress]
+  - name: Data and delivery
+    items: [MongoDB, MySQL, SQL Server, Git, GitHub, Docker, Vercel, Render, CI/CD]
+  - name: Systems and support
+    items: [Windows, Linux, Microsoft 365, Networking, Firewalls, Sage, QuickBooks]
+  - name: Applied AI
+    items: [OpenCV, InsightFace, Gemini API, LLM classification]
 ---
 
-Go is the default for services that sit on a hot path, like the Ledgerline reconciliation engine. TypeScript covers the web layer and internal dashboards such as Pulse. Python is used for data work and the retrieval pipeline behind Atlas.
+On the web, Felistas works mostly in Next.js and TypeScript on the front end, with Python (FastAPI) or Java (Spring Boot) behind it. They have also built production modules in PHP with Laravel and CodeIgniter, on MySQL.
 
-PostgreSQL is the system of record almost everywhere, with Kafka carrying events between services and Redis used for short-lived state and rate limits.
+Delivery is part of the job: Git with code review, preview builds on Vercel for every pull request, APIs deployed to Render from GitHub, and Docker for containerised services.
 
-The AI work is grounded and measured: retrieval with pgvector, answers from the Gemini API, and evaluation sets that run before anything ships.
+On the systems side, they have configured firewalls and networks (Cisco and Huawei), run a Microsoft 365 migration, deployed Sage servers and SQL Server networking for client businesses, and handled first and second line support.
+
+The AI work is applied: face recognition with OpenCV and InsightFace in Sentinel, and an LLM classification pipeline with Gemini page analysis in SENTRY.

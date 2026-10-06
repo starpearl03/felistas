@@ -1,6 +1,6 @@
 "use client";
 
-import type { Project } from "@/features/content";
+import { PROJECT_STATUS, type Project } from "@/features/content";
 import { flashWord, selectProject, useStage } from "@/features/stage";
 import { cn } from "@/lib/cn";
 import { AskDusk } from "../shared/AskDusk";
@@ -56,7 +56,7 @@ export function ProjectIndex({ projects }: { projects: ProjectSummary[] }) {
                   ) : null}
                 </b>
                 <span className="font-mono text-[11px] tracking-[.1em] text-muted uppercase">
-                  {p.status === "LIVE" ? "Live" : "Building"}
+                  {PROJECT_STATUS[p.status].tag}
                 </span>
               </button>
             </div>
@@ -70,7 +70,7 @@ export function ProjectIndex({ projects }: { projects: ProjectSummary[] }) {
         className="grid gap-4 desk:sticky desk:top-[110px]"
       >
         <span className="font-mono text-[11px] tracking-[.12em] text-acc uppercase">
-          {selected.kind} · {selected.status === "LIVE" ? "in production" : "in progress"}
+          {selected.kind} · {PROJECT_STATUS[selected.status].detail}
         </span>
         <div className="font-serif text-[clamp(56px,6vw,96px)] leading-[.9] text-fg">
           {selected.metric}

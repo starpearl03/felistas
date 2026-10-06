@@ -22,7 +22,9 @@ type YearRulerProps = {
 export function YearRuler({ roles, from, to }: YearRulerProps) {
   const selectedSlug = useStage((s) => s.roleSlug);
   const selected =
-    roles.find((r) => r.slug === selectedSlug) ?? roles.find((r) => r.current) ?? roles[0];
+    roles.find((r) => r.slug === selectedSlug) ??
+    roles.find((r) => r.current) ??
+    roles[roles.length - 1];
   const span = to - from;
   const years = Array.from({ length: span }, (_, i) => from + i);
   const pct = (v: number) => `${(v / span) * 100}%`;

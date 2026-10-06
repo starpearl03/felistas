@@ -1,4 +1,4 @@
-import type { Site } from "@/features/content";
+import type { ProjectStatus, Site } from "@/features/content";
 
 /** The slice of the content the agent works from. Built from `content/`, never hard-coded. */
 export type AgentRecord = {
@@ -15,7 +15,7 @@ export type AgentRecord = {
     id: string;
     name: string;
     kind: string;
-    status: "LIVE" | "WIP";
+    status: ProjectStatus;
     year: string;
     stack: string[];
     desc: string;

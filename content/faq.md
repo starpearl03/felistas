@@ -1,23 +1,22 @@
 ---
-sample: true
 ---
 
 ## Is Felistas open to new roles?
 
-Yes. Felistas is open to senior backend or AI platform roles, remote or hybrid. Short freelance work is possible when the scope is clear.
+Yes. Felistas is open to software engineering roles, especially full-stack and backend work, and to IT systems and support roles. They are based in Harare, Zimbabwe.
 
-## Where does Felistas work from, and are they willing to relocate?
+## What does Felistas bring to a team?
 
-Felistas works remotely with teams across time zones and is open to discussing relocation for the right role.
+Both sides of IT. They can gather requirements, design a data model, build and deploy a full-stack app, and then support the people who use it: accounts, networks, devices and the fixes nobody wants to wait for.
 
 ## How does Felistas like to work?
 
-Small, well-defined changes shipped often, with tests and monitoring in place before launch. Felistas prefers writing things down: design notes before building, and runbooks before incidents.
+From requirements through development to deployment, keeping the code, the systems and the documentation practical and maintainable. They write up recurring fixes, so the next one takes minutes instead of hours.
 
 ## What kind of team is a good fit?
 
-A product team that cares about reliability and measures it, where engineers own their services in production and code review is a conversation rather than a gate.
+A team that builds products people rely on, where Felistas can learn from the engineers around them and keep growing. Applied AI is a particular interest.
 
 ## How can I contact Felistas?
 
-Ask Dusk to pass on a message, fill in the letter in the Contact section, or email hello@felistas.dev directly.
+Email dev@felistas.co.zw, fill in the letter in the Contact section, or ask Dusk to pass on a message.
