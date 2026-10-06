@@ -120,6 +120,66 @@ test("the contact letter validates the email and hands a draft to Dusk", async (
   await expect(draft).toHaveCount(0);
 });
 
+const toContact = (page: Page) =>
+  page.evaluate(() => {
+    const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
+    sc.scrollTop = sc.querySelector<HTMLElement>('[data-sec="contact"]')!.offsetTop;
+  });
+
+test("send via email checks the letter, sends it, and confirms", async ({ page }) => {
+  let sent: Record<string, unknown> | null = null;
+  await page.route("**/api/contact", async (route) => {
+    sent = route.request().postDataJSON();
+    await route.fulfill({ json: { ok: true, confirmed: true } });
+  });
+  await toContact(page);
+  const send = page.getByRole("button", { name: "Send via email" });
+
+  await send.click();
+  await expect(page.locator("#letter-error")).toContainText("Add your name");
+  await expect(page.locator("#letter-name")).toBeFocused();
+
+  await page.locator("#letter-name").fill("Ada");
+  await page.locator("#letter-email").fill("not-an-email");
+  await send.click();
+  await expect(page.locator("#letter-error")).toContainText("Add an email address");
+  expect(sent).toBeNull();
+
+  await page.locator("#letter-email").fill("ada@acme.com");
+  await page.locator("#letter-topic").fill("a backend role");
+  await send.click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "confirmation is on its way" }),
+  ).toHaveCount(2);
+  expect(sent).toMatchObject({
+    replyTo: "ada@acme.com",
+    name: "Ada",
+    topic: "a backend role",
+    message: "Hi Felistas, I'm Ada. I'd like to talk about a backend role.",
+    website: "",
+  });
+  await expect(page.locator("#letter-name")).toHaveValue("");
+});
+
+test("send via email shows the server's reason when sending fails", async ({ page }) => {
+  await page.route("**/api/contact", (route) =>
+    route.fulfill({
+      status: 503,
+      json: {
+        ok: false,
+        error: "not_configured",
+        message: "Sending is not set up yet. Email Felistas directly instead.",
+      },
+    }),
+  );
+  await toContact(page);
+  await page.locator("#letter-name").fill("Ada");
+  await page.locator("#letter-email").fill("ada@acme.com");
+  await page.getByRole("button", { name: "Send via email" }).click();
+  await expect(page.locator("#letter-error")).toContainText("Sending is not set up yet");
+  await expect(page.locator("#letter-name")).toHaveValue("Ada");
+});
+
 test("Ask Dusk links send the question to the conversation", async ({ page }) => {
   await page.evaluate(() => {
     const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
