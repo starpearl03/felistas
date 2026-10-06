@@ -3,10 +3,21 @@ import { z } from "zod";
 
 // Every variable is optional at boot so the site runs without keys (offline agent, no email).
 // Code that needs a value checks for it where it is used. See .env.example.
+
+/** Removes one pair of surrounding quotes: dashboards like Vercel keep them as part of the value. */
+export const unquote = (v: string): string => {
+  const t = v.trim();
+  return t.length >= 2 && (t[0] === '"' || t[0] === "'") && t.at(-1) === t[0]
+    ? t.slice(1, -1).trim()
+    : t;
+};
+
 const optional = z
   .string()
-  .trim()
-  .transform((v) => (v === "" ? undefined : v))
+  .transform((v) => {
+    const value = unquote(v);
+    return value === "" ? undefined : value;
+  })
   .optional();
 
 export const envSchema = z.object({
@@ -45,10 +56,32 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
   return result.data;
 }
 
+/**
+ * Like parseEnv, but a bad variable is reported through `warn` and treated as unset instead of
+ * throwing, so one mistyped value can never break the build or the pages. Code that depends on it
+ * (email, Gemini) then behaves as if it were missing.
+ */
+export function parseEnvLenient(
+  source: Record<string, string | undefined>,
+  warn: (message: string) => void = console.warn,
+): Env {
+  const input = { ...source };
+  for (let attempt = 0; attempt <= Object.keys(envSchema.shape).length; attempt++) {
+    const result = envSchema.safeParse(input);
+    if (result.success) return result.data;
+    for (const issue of result.error.issues) {
+      const key = String(issue.path[0]);
+      warn(`Ignoring environment variable ${key}: ${issue.message}`);
+      delete input[key];
+    }
+  }
+  return envSchema.parse({});
+}
+
 let cached: Env | undefined;
 
-/** Validated server environment, parsed once per process. */
+/** The server environment, parsed once per process. Bad values are warned about and ignored. */
 export function env(): Env {
-  cached ??= parseEnv(process.env);
+  cached ??= parseEnvLenient(process.env);
   return cached;
 }
