@@ -51,6 +51,17 @@ test("contact shows the email with a copy action", async ({ page }) => {
   await expect(section(page, "contact").getByRole("button", { name: /Copy/ })).toBeVisible();
 });
 
+test("contact links show clean addresses with icons and open the full URLs", async ({ page }) => {
+  const contact = section(page, "contact");
+  const github = contact.getByRole("link", { name: "github.com/starpearl03" });
+  await expect(github).toHaveAttribute("href", "https://github.com/starpearl03");
+  const linkedin = contact.getByRole("link", { name: "linkedin.com/in/felistas-charuka" });
+  await expect(linkedin).toHaveAttribute("href", "https://www.linkedin.com/in/felistas-charuka");
+  await expect(linkedin).toHaveAttribute("target", "_blank");
+  await expect(linkedin.locator("svg")).toHaveCount(1);
+  await expect(contact).not.toContainText("www.");
+});
+
 test("no section scrolls sideways", async ({ page }) => {
   for (const id of ["about", "projects", "experience", "education", "contact"]) {
     await page.evaluate((sec) => {

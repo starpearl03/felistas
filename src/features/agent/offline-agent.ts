@@ -219,7 +219,8 @@ export function respondOffline(
   }
 
   if (/\b(about|who|yourself|bio)\b/.test(q) || q === rec.name.toLowerCase()) {
-    return reply(rec.about[0] ?? rec.line, {
+    // The bio is in Felistas's own first-person voice, so Dusk introduces them in the third person
+    return reply(`${rec.name} is a ${rec.role.toLowerCase()}. ${rec.line} ${rec.availability}.`, {
       tools: [{ name: "navigate", input: { section: "about" } }],
       chips: ["What stack?", "Show projects"],
     });

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { loadSite } from "@/features/content/server";
 import { parseEnv } from "@/lib/env";
 import { clientIp, createRateLimiter, type RateLimiter } from "@/lib/rate-limit";
 import { resolveSiteUrl } from "@/lib/site-url";
@@ -19,7 +20,7 @@ export type ContactDeps = {
   mailer: Mailer;
   limiter: RateLimiter;
   /** null when sending is not configured */
-  config: () => MailConfig | null;
+  config: () => MailConfig | null | Promise<MailConfig | null>;
   now: () => number;
   log: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -30,16 +31,17 @@ export const contactLimiter = createRateLimiter([
   { limit: 10, windowMs: 24 * 60 * 60 * 1_000 },
 ]);
 
-/** Reads the mail settings from the environment on each request. */
-export function mailConfigFromEnv(): MailConfig | null {
+/** Reads the mail settings from the environment on each request, and the owner's name from content. */
+export async function mailConfigFromEnv(): Promise<MailConfig | null> {
   const env = parseEnv(process.env);
   if (!env.RESEND_API_KEY || !env.CONTACT_TO_EMAIL || !env.CONTACT_FROM_EMAIL) return null;
-  const site = resolveSiteUrl().host;
+  const { profile } = await loadSite();
   return {
     apiKey: env.RESEND_API_KEY,
     to: env.CONTACT_TO_EMAIL,
     from: env.CONTACT_FROM_EMAIL,
-    site,
+    site: resolveSiteUrl().host,
+    owner: profile.fullName,
   };
 }
 
@@ -59,7 +61,10 @@ type FailExtra = { fields?: Record<string, string>; retryAfter?: number };
 const fail = (status: number, error: ContactErrorCode, extra?: FailExtra, headers?: HeadersInit) =>
   json(status, { ok: false, error, message: CONTACT_ERRORS[error], ...extra }, headers);
 
-/** POST /api/contact. Only the visitor's Send click on a draft calls this; the model never can. */
+/**
+ * POST /api/contact. Only a visitor's click calls this (Send on Dusk's draft, or Send via email on
+ * the letter); the model never can.
+ */
 export async function handleContact(
   request: Request,
   deps: ContactDeps = defaultContactDeps,
@@ -95,7 +100,7 @@ export async function handleContact(
 
   let config: MailConfig | null;
   try {
-    config = deps.config();
+    config = await deps.config();
   } catch (err) {
     // a malformed variable is a setup problem: answer in the same JSON shape and log it
     deps.log("bad mail config", { reason: (err as Error).message });
@@ -118,5 +123,6 @@ export async function handleContact(
     deps.log("send failed", { reason: result.reason });
     return fail(502, "send_failed");
   }
-  return json(200, { ok: true });
+  if (!result.confirmed) deps.log("confirmation not sent", { to: "visitor" });
+  return json(200, { ok: true, confirmed: result.confirmed });
 }

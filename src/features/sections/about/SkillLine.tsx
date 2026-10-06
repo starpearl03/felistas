@@ -6,7 +6,7 @@ import { flashWord } from "@/features/stage";
 /** The daily stack on one wrapping line. Hovering a skill spells it in the glyph field (UI-SPEC §4). */
 export function SkillLine({ skills }: { skills: string[] }) {
   return (
-    <p className="mt-[30px] font-mono text-[13px] leading-[2.1] text-muted">
+    <p className="mt-5 font-mono text-[12.5px] leading-[1.95] text-muted">
       Daily stack <span className="text-acc/35"> · </span>
       {skills.map((s, i) => (
         <Fragment key={s}>

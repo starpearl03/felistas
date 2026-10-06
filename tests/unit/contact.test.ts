@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { buildContactEmail, escapeHtml } from "@/features/contact/email";
+import { confirmationEmail, notificationEmail } from "@/features/contact/emails/build";
 import {
   type ContactDeps,
   contactLimiter,
@@ -27,11 +27,12 @@ const config = {
   to: "inbox@felistas.dev",
   from: "Dusk <dusk@felistas.dev>",
   site: "felistas.dev",
+  owner: "Felistas Charuka",
 };
 
 function deps(overrides: Partial<ContactDeps> = {}): ContactDeps {
   return {
-    mailer: vi.fn(async () => ({ ok: true as const, id: "email_1" })),
+    mailer: vi.fn(async () => ({ ok: true as const, id: "email_1", confirmed: true })),
     limiter: createRateLimiter([{ limit: 3, windowMs: 600_000 }]),
     config: () => config,
     now: () => NOW,
@@ -85,28 +86,30 @@ describe("checkTraps", () => {
     expect(checkTraps({ ...msg, elapsedMs: 2 * 86_400_000 })).toBe("stale"));
 });
 
-describe("buildContactEmail", () => {
-  it("escapes visitor text in the HTML and keeps it plain in the text part", () => {
-    const msg = contactSchema.parse({
-      ...valid,
-      name: "<b>Eve</b>",
-      message: "<script>x</script>",
-    });
-    const email = buildContactEmail(msg, "felistas.dev");
+describe("contact emails (React Email templates)", () => {
+  const hostile = () =>
+    contactSchema.parse({ ...valid, name: "<b>Eve</b>", message: "<script>x</script>\nline two" });
+
+  it("tells Felistas who wrote and what, with visitor text escaped", async () => {
+    const email = await notificationEmail(hostile(), "felistas.co.zw");
     expect(email.html).not.toContain("<script>");
     expect(email.html).toContain("&lt;script&gt;");
-    expect(email.html).toContain("&lt;b&gt;Eve&lt;/b&gt;");
+    expect(email.html).toContain("ada@company.com");
     expect(email.text).toContain("<script>x</script>");
     expect(email.subject).toBe("Portfolio message from <b>Eve</b> (Company)");
   });
 
-  it("keeps the subject on one line", () => {
-    const msg = contactSchema.parse({ ...valid, name: "Ada\r\nBcc: x@y.z" });
-    expect(buildContactEmail(msg, "s").subject).not.toMatch(/[\r\n]/);
+  it("sends the visitor a receipt with a copy of their message", async () => {
+    const email = await confirmationEmail(hostile(), "Felistas Charuka", "felistas.co.zw");
+    expect(email.subject).toBe("Your message to Felistas Charuka was sent");
+    expect(email.html).toContain("Your message reached Felistas Charuka");
+    expect(email.html).not.toContain("<script>");
+    expect(email.text).toContain("line two");
   });
 
-  it("escapes every HTML-significant character", () => {
-    expect(escapeHtml(`&<>"'`)).toBe("&amp;&lt;&gt;&quot;&#39;");
+  it("keeps subjects on one line", async () => {
+    const msg = contactSchema.parse({ ...valid, name: "Ada\r\nBcc: x@y.z" });
+    expect((await notificationEmail(msg, "s")).subject).not.toMatch(/[\r\n]/);
   });
 });
 
@@ -152,7 +155,7 @@ describe("POST /api/contact", () => {
     const d = deps();
     const res = await handleContact(post(valid), d);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true });
+    expect(await res.json()).toEqual({ ok: true, confirmed: true });
     expect(d.mailer).toHaveBeenCalledWith(
       expect.objectContaining({ replyTo: "ada@company.com" }),
       config,
@@ -241,21 +244,22 @@ describe("mailConfigFromEnv", () => {
     contactLimiter.reset();
   });
 
-  it("is null until the key, inbox and sender are all set", () => {
+  it("is null until the key, inbox and sender are all set", async () => {
     vi.stubEnv("RESEND_API_KEY", "");
     vi.stubEnv("CONTACT_TO_EMAIL", "");
     vi.stubEnv("CONTACT_FROM_EMAIL", "");
-    expect(mailConfigFromEnv()).toBeNull();
+    expect(await mailConfigFromEnv()).toBeNull();
     vi.stubEnv("RESEND_API_KEY", "re_x");
-    vi.stubEnv("CONTACT_TO_EMAIL", "inbox@felistas.dev");
-    expect(mailConfigFromEnv()).toBeNull();
+    vi.stubEnv("CONTACT_TO_EMAIL", "dev@felistas.co.zw");
+    expect(await mailConfigFromEnv()).toBeNull();
     vi.stubEnv("CONTACT_FROM_EMAIL", "Dusk <onboarding@resend.dev>");
-    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://felistas.dev");
-    expect(mailConfigFromEnv()).toEqual({
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://felistas.co.zw");
+    expect(await mailConfigFromEnv()).toEqual({
       apiKey: "re_x",
-      to: "inbox@felistas.dev",
+      to: "dev@felistas.co.zw",
       from: "Dusk <onboarding@resend.dev>",
-      site: "felistas.dev",
+      site: "felistas.co.zw",
+      owner: "Felistas Charuka",
     });
   });
 });

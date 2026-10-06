@@ -64,7 +64,8 @@ export const CONTACT_ERRORS = {
 export type ContactErrorCode = keyof typeof CONTACT_ERRORS;
 
 export type ContactResponse =
-  | { ok: true }
+  /** `confirmed`: the visitor's receipt went out too */
+  | { ok: true; confirmed?: boolean }
   | {
       ok: false;
       error: ContactErrorCode;

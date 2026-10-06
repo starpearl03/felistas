@@ -7,6 +7,11 @@ export const PALETTE = {
   muted: "#9a8490",
   acc: "#e2a6b6",
   acc2: "#fbe3ea",
+  /** Email only: a light page reads reliably in every mail client */
+  ink: "#24101a",
+  paper: "#fbf7f9",
+  rule: "#ead9e1",
+  quiet: "#7a6470",
 } as const;
 
 const GLYPHS = "01{}<>/=+*#%&$@;:";

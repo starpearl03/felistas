@@ -27,7 +27,7 @@ export function SectionShell({ id, label, variant = "default", children }: Secti
         "desk:pr-[clamp(24px,5vw,80px)] desk:pl-[clamp(20px,2.6vw,40px)]",
         hero
           ? "scrim-hero justify-end pb-[190px] desk:pb-[52px]"
-          : "panel justify-center pb-[200px] desk:pt-24 desk:pb-[72px]",
+          : "panel justify-center pb-[200px] desk:pt-24 desk:pb-[72px] desk:[@media(max-height:760px)]:pt-[76px] desk:[@media(max-height:760px)]:pb-[52px]",
       )}
     >
       {children}

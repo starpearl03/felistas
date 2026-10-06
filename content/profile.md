@@ -67,8 +67,8 @@ seo:
     - IT support Harare
 ---
 
-Felistas is a software engineer who works on both sides of IT: building and deploying web applications, and looking after the people and systems that depend on them. They have shipped full-stack apps in Next.js, TypeScript and Python, and they have also run a company's network, moved its staff to Microsoft 365 and kept its machines working.
+I’m a software engineer with hands-on experience building, deploying, and supporting web applications and IT systems.
 
-They like to take a project from the first conversation about requirements, through the data model and the code, to a live deployment with preview builds and automatic releases. Then they write it down, so the next person can run it without them.
+I’ve worked across full-stack development, backend APIs, databases, cloud deployment, and IT infrastructure. I enjoy taking a project from requirements and development through to deployment, while keeping the code, systems, and documentation practical and maintainable.
 
-Felistas holds a BSc Honours in Computer Science from the University of Zimbabwe, with an AI research focus. They are looking for a team that builds software people rely on, where they can keep growing as an engineer, and they are especially interested in applied AI.
+I’m particularly interested in software engineering and applied AI, and I enjoy learning, solving real-world problems, and building software that people can rely on.
