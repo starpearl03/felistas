@@ -20,7 +20,7 @@ export function About({ profile, skills }: { profile: Profile; skills: Skills })
         <Emphasis parts={profile.lineParts} />
       </h2>
 
-      <div className="mt-7 grid items-start gap-[clamp(20px,3.5vw,56px)] desk:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] [@media(max-height:820px)]:mt-5">
+      <div className="mt-7 grid items-start gap-[clamp(20px,3.5vw,56px)] wide:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] [@media(max-height:820px)]:mt-5">
         <div className="min-w-0">
           {profile.about.map((p, i) => (
             <p key={i} className="mb-3 max-w-[58ch] text-[15px] leading-[1.65] text-fg2">

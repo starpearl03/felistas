@@ -11,8 +11,7 @@ import {
   showDraft,
 } from "@/features/stage";
 import type { CompanionConfig } from "./config";
-
-const isPhone = () => window.innerWidth < 900;
+import { isPhone } from "./phone";
 
 /** Runs a page tool; the server-only search returns null. */
 export function runTool(

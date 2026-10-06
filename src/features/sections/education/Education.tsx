@@ -15,7 +15,7 @@ export function Education({ entries }: { entries: EducationEntry[] }) {
         {entries.map((e) => (
           <div
             key={e.slug}
-            className={`group grid items-center gap-[clamp(20px,4vw,56px)] py-[18px] desk:grid-cols-[minmax(150px,.7fr)_minmax(0,1.3fr)] ${ruledRow}`}
+            className={`group grid items-center gap-[clamp(20px,4vw,56px)] py-[18px] wide:grid-cols-[minmax(150px,.7fr)_minmax(0,1.3fr)] ${ruledRow}`}
           >
             <span
               aria-hidden

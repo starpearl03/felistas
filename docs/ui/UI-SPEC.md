@@ -70,8 +70,8 @@ Headings use `text-wrap: balance`. In `next/font`, every family is exposed as a 
 
 ### Layout
 
-- `--col: clamp(340px, 30vw, 440px)`: the width of the companion column on desktop.
-- The breakpoint is **900px**. Below it, the column becomes a bottom sheet (see §8).
+- `--col: clamp(340px, 30vw, 440px)`: the width of the companion column on desktop (`clamp(230px, 34vw, 340px)` from 600 to 899px).
+- The breakpoints are **600px** (below it, phones get the bottom sheet) and **900px** (two-column section details). See §9.
 - Content padding: `96px clamp(24px,5vw,80px) 72px clamp(20px,2.6vw,40px)`. Content max width is 1060px.
 
 ---
@@ -307,7 +307,15 @@ Every section has an eyebrow (`Section / detail` in mono, accent first word), ma
 
 ---
 
-## 9. Mobile (below 900px)
+## 9. Screen sizes
+
+| Width                                | Layout                                                                                                                                                                    |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 900px and up                         | The full layout: companion column `clamp(340px, 30vw, 440px)`, two-column section details                                                                                 |
+| 600–899px (tablets, unfolded phones) | The full layout with a narrower column, `clamp(230px, 34vw, 340px)`; section details stack to one column; the section nav shows from 800px, the "Motion" label from 900px |
+| Below 600px (phones)                 | The column becomes a bottom sheet (below)                                                                                                                                 |
+
+### 9.1 Phones (below 600px)
 
 - The column becomes a **bottom sheet**: 156px collapsed, 76% expanded, with a .4s ease.
   - The collapsed sheet shows the 40px sphere slot, "Dusk" with its status, an expand button, a one-line preview of the last AI message, and the composer.
