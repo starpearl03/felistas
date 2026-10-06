@@ -47,8 +47,8 @@ The site works without keys. Without `GEMINI_API_KEY`, Dusk falls back to a loca
 | `GEMINI_API_KEY`       | For live AI    | Gemini key from [Google AI Studio](https://aistudio.google.com/apikey) (the free tier is enough) |
 | `GEMINI_MODEL`         | No             | Model id, default `gemini-flash-lite-latest`                                                     |
 | `RESEND_API_KEY`       | For email      | Resend API key                                                                                   |
-| `CONTACT_TO_EMAIL`     | For email      | Inbox that receives visitor messages                                                             |
-| `CONTACT_FROM_EMAIL`   | For email      | Verified sender, for example `Dusk <dusk@felistas.dev>`                                          |
+| `CONTACT_TO_EMAIL`     | For email      | Felistas's inbox: visitor messages arrive here (`felistas03charuka@gmail.com`)                   |
+| `CONTACT_FROM_EMAIL`   | For email      | Sender of both emails, on the domain verified in Resend (`Dusk <noreply@felistas.co.zw>`)        |
 | `NEXT_PUBLIC_SITE_URL` | For production | Canonical URL for metadata and Open Graph                                                        |
 
 ### Scripts

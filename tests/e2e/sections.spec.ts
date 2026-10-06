@@ -144,7 +144,7 @@ test.describe("on still without the OS reduced-motion setting", () => {
   test("navigation jumps instantly", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto("/");
-    await page.getByRole("button", { name: "still" }).click();
+    await page.getByRole("combobox", { name: "Motion" }).selectOption("still");
     const landed = await page.evaluate(() => {
       const nav = document.querySelector('nav[aria-label="Sections"]')!;
       const button = [...nav.querySelectorAll("button")].find((b) => b.textContent === "Contact")!;

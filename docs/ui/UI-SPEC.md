@@ -151,22 +151,22 @@ Let `k = smoothstep(clamp(scrollTop / (viewportHeight × .6)))`.
 
 ### 5.2 Glyph streams
 
-When `k > .9` on desktop and the current section has an `[data-anchor]` eyebrow inside the viewport, glyphs leave the sphere and feed that eyebrow. There is no line.
+When `k > .9` on desktop and the current section has an `[data-anchor]` eyebrow inside the viewport, glyphs drift off the sphere and feed that eyebrow: calm, a few at a time, noticeable but never busy. There is no line.
 
 - Each glyph is lifted off the sphere: a lit, front-facing point on the side nearest the eyebrow, with its own character and size. It ends just left of the eyebrow.
 - The path follows the sphere's form (`streams.ts`):
 
-  | Form               | Path                                                                            |
-  | ------------------ | ------------------------------------------------------------------------------- |
-  | torus (About)      | spiral: three coils winding around the path                                     |
-  | cube (Projects)    | circuit: right-angle traces that hop forward in eight steps, like data on a bus |
-  | helix (Experience) | helix: two strands half a turn apart                                            |
-  | ring (Education)   | orbit: rides a flat ring around the sphere, then slingshots off its top         |
-  | letter (Contact)   | glide: a high arc, then a paper-plane descent with a little sway                |
+  | Form               | Path                                                                           |
+  | ------------------ | ------------------------------------------------------------------------------ |
+  | torus (About)      | spiral: two loose coils winding around the path                                |
+  | cube (Projects)    | circuit: right-angle traces that hop forward in five steps, like data on a bus |
+  | helix (Experience) | helix: two strands half a turn apart                                           |
+  | ring (Education)   | orbit: rides a flat ring around the sphere, then slingshots off its top        |
+  | letter (Contact)   | glide: a high arc, then a paper-plane descent with a little sway               |
 
-- Glyphs shrink to 11px and get a short two-copy tail. In the last fifth of the path they turn accent and decode into letters of the eyebrow's word.
-- An accent dot (r 2.5) marks the end and swells briefly as each glyph lands.
-- Lively emits every 70 ms (1.75 s flights), Calm every 110 ms (2.3 s). Still draws a few frozen glyphs along each path, with no motion.
+- Each glyph eases along its path (smoothstep), shrinks to 10px, fades in as it leaves and out as it lands, with no tail and no flicker. In the last third it turns accent and decodes once into a letter of the eyebrow's word.
+- An accent dot (r 2.5) marks the end and swells softly as each glyph lands.
+- Lively emits every 340 ms (3.4 s flights, about ten glyphs in flight), Calm every 560 ms (4.2 s). Still draws a few frozen glyphs along each path, with no motion.
 - The stream fades in and out at 8% per frame and finishes fading from one section before it starts on the next.
 
 ### 5.3 Headings fly out of the sphere
@@ -175,10 +175,10 @@ This applies to every section heading marked `data-fly`: the About statement and
 
 - Before a section is entered, its heading has opacity 0 (`.flying`).
 - On entering (by scroll, nav click or AI navigation), split the heading's text nodes into characters and get each character's live rectangle with a DOM `Range`.
-- Each character launches from a random point inside the sphere, delayed by `index × 24 ms`, and flies for 950 ms along a quadratic curve that arcs above both points.
-- In flight the character is a cycling random glyph in highlight colour. Its size grows from `max(9, R × .11)` to the heading's font size.
-- After 72% of the flight it becomes the real character, in the real colour and font (italic spans keep their italics and accent colour).
-- When the last character lands, `.flying` is removed: the real heading fades in over .45 s and the canvas letters fade out over .38 s.
+- Each character launches from a random point inside the sphere, delayed by `index × 20 ms`, and flies for 1250 ms along a low quadratic arc above both points, eased with smootherstep so it leaves and lands without a jolt.
+- In flight the character is a random glyph in highlight colour (one per letter, it does not cycle). Its size grows from `max(9, R × .11)` to the heading's font size.
+- Between 45% and 85% of the flight the glyph dissolves into the real character, in the real colour and font (italic spans keep their italics and accent colour).
+- When the last character lands, `.flying` is removed: the real heading fades in over .42 s while the canvas letters fade out over the same time.
 - Leaving a section re-hides its heading, so the effect replays every time you return.
 - Re-read the character rectangles **every frame** so landing stays exact while the page is still scrolling.
 - With Still motion or reduced motion, headings never hide or fly.
@@ -254,7 +254,7 @@ Conversation flows the prototype covers, which production must keep:
 
 ## 7. Motion levels
 
-These are visitor-selectable and remembered in `localStorage` under `dusk-motion`. **The default is Lively**; visitors with `prefers-reduced-motion: reduce` start on Still.
+These are visitor-selectable, from a quiet drop-down at the right of the top bar (the current level in mono uppercase with a chevron, no box and no label; a native `<select>` named "Motion" for assistive tech), and remembered in `localStorage` under `dusk-motion`. **The default is Lively**; visitors with `prefers-reduced-motion: reduce` start on Still.
 
 | Level  | Glyph change rate (share of cells per 45 ms) | Field brightness | Cursor light | Sphere spin |
 | ------ | -------------------------------------------- | ---------------- | ------------ | ----------- |
@@ -309,11 +309,11 @@ Every section has an eyebrow (`Section / detail` in mono, accent first word), ma
 
 ## 9. Screen sizes
 
-| Width                                | Layout                                                                                                                                                                    |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 900px and up                         | The full layout: companion column `clamp(340px, 30vw, 440px)`, two-column section details                                                                                 |
-| 600–899px (tablets, unfolded phones) | The full layout with a narrower column, `clamp(230px, 34vw, 340px)`; section details stack to one column; the section nav shows from 800px, the "Motion" label from 900px |
-| Below 600px (phones)                 | The column becomes a bottom sheet (below)                                                                                                                                 |
+| Width                                | Layout                                                                                                                                     |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 900px and up                         | The full layout: companion column `clamp(340px, 30vw, 440px)`, two-column section details                                                  |
+| 600–899px (tablets, unfolded phones) | The full layout with a narrower column, `clamp(230px, 34vw, 340px)`; section details stack to one column; the section nav shows from 800px |
+| Below 600px (phones)                 | The column becomes a bottom sheet (below)                                                                                                  |
 
 ### 9.1 Phones (below 600px): chat first
 
@@ -328,7 +328,7 @@ Phones open on the conversation. The page waits behind it, one tap away.
   - Taps give a light haptic tick where supported, and controls scale slightly while pressed.
 - **Browse** (folded): the page, with the companion as a 184px bar at the bottom (the 40px orb, "Dusk" with its status, a one-line preview of the last reply, and the composer). Focusing the composer, tapping the expand button or any "Ask…" link returns to the chat.
 - The page is hidden with CSS while the chat is open (`:has()`, so it is right before any script runs) and made `inert` by the engine; it fades back in over .4s.
-- The nav and the "Motion" label are hidden; the motion buttons stay.
+- The nav is hidden; the motion drop-down stays.
 - Content panels get 200px of bottom padding, and every two-column layout stacks to one column.
 - The glyph streams are not drawn on phones.
 
