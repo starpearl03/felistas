@@ -24,10 +24,17 @@ export function heroSphere(W: number, H: number): Circle {
   return { x: col / 2, y: H * 0.33, R: Math.min(col * 0.42, H * 0.29) };
 }
 
-/** The sphere docked at the top of the column. It stays large; on phones it sits in the sheet header slot. */
-export function dockedSphere(W: number, H: number, slot?: { x: number; y: number }): Circle {
+/**
+ * The sphere docked at the top of the column. It stays large. On phones it fills the companion's slot:
+ * a small mark on the folded bar, a large orb while the chat fills the screen.
+ */
+export function dockedSphere(
+  W: number,
+  H: number,
+  slot?: { x: number; y: number; r?: number },
+): Circle {
   const col = columnWidth(W);
-  if (!col) return { x: slot?.x ?? W / 2, y: slot?.y ?? H * 0.2, R: 17 };
+  if (!col) return { x: slot?.x ?? W / 2, y: slot?.y ?? H * 0.2, R: slot?.r ?? 17 };
   const R = Math.min(col * 0.3, H * 0.17);
   return { x: col / 2, y: 64 + R, R };
 }

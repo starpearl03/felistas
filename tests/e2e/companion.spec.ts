@@ -1,12 +1,13 @@
 import { expect, type Page, test } from "@playwright/test";
+import { browse } from "./browse";
 
 const stage = (page: Page) => page.locator("[data-stage]");
 const companion = (page: Page) => page.getByRole("complementary", { name: /Dusk/ });
 const log = (page: Page) => page.getByRole("log", { name: "Conversation with Dusk" });
 
 /**
- * The conversation, readable. On phones the sheet folds whenever Dusk moves the page, so this
- * reopens it first (focusing the composer opens it; on desktop that is harmless).
+ * The conversation, readable. On phones it may have been folded to browse the page, so this reopens
+ * it first (focusing the composer opens it; on desktop that is harmless).
  */
 async function conversation(page: Page) {
   await page.locator("#dusk-input").click();
@@ -103,6 +104,7 @@ test("the chat contact flow ends in a draft that only the visitor sends", async 
 });
 
 test("the contact letter validates the email and hands a draft to Dusk", async ({ page }) => {
+  await browse(page);
   await page.evaluate(() => {
     const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
     sc.scrollTop = sc.querySelector<HTMLElement>('[data-sec="contact"]')!.offsetTop;
@@ -120,11 +122,13 @@ test("the contact letter validates the email and hands a draft to Dusk", async (
   await expect(draft).toHaveCount(0);
 });
 
-const toContact = (page: Page) =>
-  page.evaluate(() => {
+const toContact = async (page: Page) => {
+  await browse(page);
+  await page.evaluate(() => {
     const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
     sc.scrollTop = sc.querySelector<HTMLElement>('[data-sec="contact"]')!.offsetTop;
   });
+};
 
 test("send via email checks the letter, sends it, and confirms", async ({ page }) => {
   let sent: Record<string, unknown> | null = null;
@@ -181,13 +185,13 @@ test("send via email shows the server's reason when sending fails", async ({ pag
 });
 
 test("Ask Dusk links send the question to the conversation", async ({ page }) => {
+  await browse(page);
   await page.evaluate(() => {
     const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
     sc.scrollTop = sc.querySelector<HTMLElement>('[data-sec="projects"]')!.offsetTop;
   });
   await page.getByRole("button", { name: /Ask Dusk about SENTRY/ }).click();
-  // On phones the answer's open_project folds the sheet whenever it lands (the runtime may still
-  // be loading), so reopen until the whole exchange is readable
+  // asking opens the phone chat; the answer may wait on the chat runtime's first load
   await expect(async () => {
     const convo = await conversation(page);
     await expect(convo).toContainText("Tell me about SENTRY", { timeout: 1_000 });
@@ -218,6 +222,7 @@ test("start over mid-reply brings the suggestions back and stops the sphere spea
 });
 
 test("the intro resume link is a plain download, not a chat request", async ({ page }) => {
+  await browse(page);
   const link = page.locator('[data-sec="home"]').getByRole("link", { name: "Download resume" });
   await expect(link).toHaveAttribute("href", "/resume/felistas-resume.pdf");
   await expect(link).toHaveAttribute("download", "felistas-resume.pdf");
@@ -273,16 +278,47 @@ test("a live answer shows its sources, and a source opens where it lives", async
 });
 
 test.describe("on phones", () => {
-  test.skip(({ isMobile }) => !isMobile, "the bottom sheet is phone-only");
+  test.skip(({ isMobile }) => !isMobile, "the chat-first view is phone-only");
 
-  test("the sheet folds, opens, and folds again when Dusk moves the page", async ({ page }) => {
-    const sheet = companion(page);
-    await expect(sheet).not.toHaveAttribute("data-open");
-    await sheet.getByRole("button", { name: "Open the conversation" }).tap();
-    await expect(sheet).toHaveAttribute("data-open", "true");
+  test("phones start in the chat, with questions to tap and the page waiting", async ({ page }) => {
+    const chat = companion(page);
+    await expect(chat).toHaveAttribute("data-open", "true");
+    await expect(page.locator("main")).toBeHidden();
+    await expect(chat.getByText("Try asking")).toBeVisible();
+    await expect(chip(page, "Show projects")).toBeVisible();
+  });
+
+  test("Dusk shows what it opens inline, and the page follows behind", async ({ page }) => {
+    const chat = companion(page);
     await chip(page, "Show projects").tap();
     // the answer may wait on the chat runtime's first load, which is slow under a busy test run
     await expect(stage(page)).toHaveAttribute("data-section", "projects", { timeout: 10_000 });
-    await expect(sheet).not.toHaveAttribute("data-open");
+    await expect(stage(page)).toHaveAttribute("data-shape", "cube");
+    await expect(chat).toHaveAttribute("data-open", "true");
+
+    await chat
+      .locator('[data-inline="projects"]')
+      .getByRole("button", { name: /Sentinel/ })
+      .tap();
+    const project = chat.locator('[data-inline="project"]').last();
+    await expect(project).toContainText("Sentinel", { timeout: 10_000 });
+    // after the first answer the suggestions become a row of chips
+    await expect(chat.getByText("Try asking")).toBeHidden();
+
+    await project.getByRole("button", { name: "See it on the page" }).tap();
+    await expect(chat).not.toHaveAttribute("data-open");
+    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("#project-detail")).toContainText("Sentinel");
+  });
+
+  test("Browse folds the chat to a bar, and the composer brings it back", async ({ page }) => {
+    const chat = companion(page);
+    await chat.getByRole("button", { name: "Browse the page" }).tap();
+    await expect(chat).not.toHaveAttribute("data-open");
+    await expect(page.locator("main")).toBeVisible();
+    await expect(page.locator("main")).not.toHaveAttribute("inert");
+    await page.locator("#dusk-input").tap();
+    await expect(chat).toHaveAttribute("data-open", "true");
+    await expect(page.locator("main")).toHaveAttribute("inert", "");
   });
 });

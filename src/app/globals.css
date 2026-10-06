@@ -158,3 +158,18 @@ body {
     outline-offset: 3px;
   }
 }
+
+/* Phones start in the chat: the page waits behind it, hidden from the first paint (no script needed),
+   and fades in when the visitor browses it (UI-SPEC §9.1). Scrolling it still works while hidden,
+   so Dusk's tools move it and the sphere takes each section's form. */
+@media (max-width: 599.98px) {
+  [data-stage] > main {
+    transition:
+      opacity 0.4s ease,
+      visibility 0.4s;
+  }
+  [data-stage]:has(> aside[data-open]) > main {
+    visibility: hidden;
+    opacity: 0;
+  }
+}

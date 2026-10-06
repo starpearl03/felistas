@@ -34,16 +34,17 @@ describe("the background shockwave", () => {
     expect(liveRipples(waves, 500 + RIPPLE_MS)).toHaveLength(0);
   });
 
-  it("starts only from the background, never from controls, text or the companion", () => {
+  it("starts only from the background, never from controls or text", () => {
     document.body.innerHTML = `
       <section id="bg"><div id="gap"></div><p id="text">Hi</p><button id="btn"><span id="inner">Go</span></button></section>
-      <aside><div id="chat"></div></aside>`;
+      <aside><div id="chat"></div><form><input id="composer" /></form></aside>`;
     const el = (id: string) => document.getElementById(id);
     expect(isBackgroundTarget(el("bg"))).toBe(true);
     expect(isBackgroundTarget(el("gap"))).toBe(true);
     expect(isBackgroundTarget(el("text"))).toBe(false);
     expect(isBackgroundTarget(el("inner"))).toBe(false);
-    expect(isBackgroundTarget(el("chat"))).toBe(false);
+    expect(isBackgroundTarget(el("chat"))).toBe(true);
+    expect(isBackgroundTarget(el("composer"))).toBe(false);
     expect(isBackgroundTarget(null)).toBe(false);
   });
 });

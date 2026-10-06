@@ -70,6 +70,18 @@ export function createStageEngine({
   const veil = root.querySelector<HTMLElement>("[data-veil]");
   const progress = root.querySelector<HTMLElement>("[data-progress]");
   const slot = root.querySelector<HTMLElement>("[data-sphere-slot]");
+  const main = scroller?.parentElement ?? null;
+  /** Phones while the chat fills the screen: the page waits behind it */
+  const inPhoneChat = () => !columnWidth(root.clientWidth) && stageStore.get().chatOpen;
+  let lastHidden: boolean | null = null;
+  /** The page behind the phone chat can't be reached until the visitor browses it */
+  const syncPage = () => {
+    const hidden = inPhoneChat();
+    if (!main || hidden === lastHidden) return;
+    lastHidden = hidden;
+    main.inert = hidden;
+    main.dataset.behindChat = hidden ? "true" : "false";
+  };
   let lastLift = -1;
   // Phones: opening the sheet docks the sphere into it even on the intro
   let sheetDock = 0;
@@ -104,7 +116,7 @@ export function createStageEngine({
     for (const id of SECTION_IDS) {
       const heading = headingOf(id);
       if (!heading) continue;
-      if (isStill() || id === entered) flights.show(heading);
+      if (isStill() || id === entered || inPhoneChat()) flights.show(heading);
       else flights.hide(heading);
     }
   };
@@ -120,7 +132,8 @@ export function createStageEngine({
     }
     const heading = headingOf(next);
     if (heading) {
-      if (still) flights.show(heading);
+      // behind the phone chat the heading isn't seen, so it doesn't fly; the sphere still changes form
+      if (still || inPhoneChat()) flights.show(heading);
       else flights.launch(heading, now);
     }
     sphere.setShape(SECTION_SHAPES[next], still);
@@ -149,7 +162,8 @@ export function createStageEngine({
       if (current !== entered) enter(current, t);
     }
 
-    if (veil) veil.style.opacity = (k * 0.38).toFixed(3);
+    // behind the phone chat the field dims further, so the conversation reads over it
+    if (veil) veil.style.opacity = Math.max(k * 0.38, sheetDock * 0.5).toFixed(3);
     if (progress && scroller) {
       const max = scroller.scrollHeight - scroller.clientHeight;
       progress.style.transform = `scaleX(${max > 0 ? clamp(scrollTop / max) : 0})`;
@@ -163,6 +177,8 @@ export function createStageEngine({
         ? {
             x: slotRect.left - origin.left + slotRect.width / 2,
             y: slotRect.top - origin.top + slotRect.height / 2,
+            // the glyphs reach a little past R, so the orb is drawn slightly inside its slot
+            r: (Math.min(slotRect.width, slotRect.height) / 2) * 0.84,
           }
         : sheetSlot(W, H);
     const hero = heroSphere(W, H);
@@ -244,6 +260,7 @@ export function createStageEngine({
   const resize = () => {
     field.resize();
     sphere.resize();
+    syncPage();
     field.setWord(name.word, name.place, true);
     loop.poke();
   };
@@ -266,7 +283,10 @@ export function createStageEngine({
     if (chatOpen !== lastOpen) {
       lastOpen = chatOpen;
       if (onDemand()) follow(600);
+      // the page reappears with its headings in place
+      resetHeadings();
     }
+    syncPage();
     if (motion !== lastMotion) {
       lastMotion = motion;
       resetHeadings();
@@ -349,6 +369,7 @@ export function createStageEngine({
       root.removeEventListener("click", onClick);
       scroller?.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
+      if (main) main.inert = false;
       // leave every heading readable if the stage goes away
       for (const id of SECTION_IDS) {
         const heading = headingOf(id);

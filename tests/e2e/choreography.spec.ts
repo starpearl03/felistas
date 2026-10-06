@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { browse } from "./browse";
 
 const stage = (page: Page) => page.locator("[data-stage]");
 const heading = (page: Page, id: string) => page.locator(`[data-sec="${id}"] [data-fly]`);
@@ -24,6 +25,7 @@ const goTo = (page: Page, id: string) =>
 test.describe("on lively", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await browse(page);
     await expect(stage(page)).toHaveAttribute("data-motion", "lively");
   });
 
@@ -76,6 +78,7 @@ test.describe("on still", () => {
 
   test("switching back to lively re-arms the other headings", async ({ page }) => {
     await page.goto("/");
+    await browse(page);
     await page.getByRole("button", { name: "still" }).click();
     await page.getByRole("button", { name: "lively" }).click();
     await expect(heading(page, "education")).toHaveClass(/flying/);

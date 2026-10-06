@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { browse } from "./browse";
 
 test("home page has the name as its h1 and never scrolls sideways", async ({ page }) => {
   await page.goto("/");
+  await browse(page);
   await expect(
     page.getByRole("heading", { level: 1, name: /^Felistas Charuka, Software Engineer/ }),
   ).toBeVisible();

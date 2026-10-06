@@ -2,7 +2,6 @@
 // Inputs are validated first: a model can ask for anything, and only real ids get through.
 import { type AnyToolName, type ToolResult, toolInputSchemas } from "@/features/agent";
 import {
-  closeChat,
   downloadResume,
   navigate,
   openProject,
@@ -11,7 +10,6 @@ import {
   showDraft,
 } from "@/features/stage";
 import type { CompanionConfig } from "./config";
-import { isPhone } from "./phone";
 
 /** Runs a page tool; the server-only search returns null. */
 export function runTool(
@@ -19,30 +17,25 @@ export function runTool(
   input: unknown,
   config: CompanionConfig,
 ): ToolResult | null {
+  // The page moves behind the phone chat too (the sphere takes the section's form) and the reply
+  // shows what was opened inline, so the chat stays open (UI-SPEC §9.1)
   const schemas = toolInputSchemas(config.ids);
-  // Moving the page closes the phone sheet so the visitor sees where Dusk went
-  const reveal = () => {
-    if (isPhone()) closeChat();
-  };
 
   switch (name) {
     case "navigate": {
       const p = schemas.navigate.safeParse(input);
       if (!p.success) return { ok: false };
-      reveal();
       return { ok: navigate(p.data.section) };
     }
     case "open_project": {
       const p = schemas.open_project.safeParse(input);
       if (!p.success) return { ok: false };
-      reveal();
       openProject(p.data.id, config.projects.find((x) => x.id === p.data.id)?.name);
       return { ok: true };
     }
     case "open_role": {
       const p = schemas.open_role.safeParse(input);
       if (!p.success) return { ok: false };
-      reveal();
       openRole(p.data.role);
       return { ok: true };
     }
