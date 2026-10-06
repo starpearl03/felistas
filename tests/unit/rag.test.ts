@@ -12,13 +12,14 @@ import {
 import { rrf } from "@/features/agent/rag/fusion";
 import { queryGroups, stem, tokenize } from "@/features/agent/rag/tokenize";
 import type { Site } from "@/features/content";
-import { CONTENT_DIR, loadSiteFrom } from "@/features/content/server";
+import { loadSiteFrom } from "@/features/content/server";
+import { FIXTURE_CONTENT } from "../fixtures/paths";
 
 let site: Site;
 let index: RagIndex;
 
 beforeAll(async () => {
-  site = await loadSiteFrom(CONTENT_DIR);
+  site = await loadSiteFrom(FIXTURE_CONTENT);
   index = buildIndex(buildChunks(site), site.profile.name);
 });
 
@@ -95,6 +96,15 @@ describe("retrieveLexical", () => {
 
   it("returns at most TOP_K hits", () => {
     expect(top("project").length).toBeLessThanOrEqual(TOP_K);
+  });
+
+  it("reads 'this project' as the selected one, even with no word in common", () => {
+    const pulse = { section: "projects" as const, projectId: "pulse", roleSlug: null };
+    expect(top("What problem did this project solve?", pulse).slice(0, 2)).toContain(
+      "project:pulse:card",
+    );
+    // without a pointing word, the selection only nudges the ranking
+    expect(top("Tell me about Ledgerline", pulse)[0]).toMatch(/^project:ledgerline:/);
   });
 
   it("boosts the project the visitor is looking at", () => {
