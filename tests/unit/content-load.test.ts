@@ -35,6 +35,20 @@ describe("the real content/ folder", () => {
     }
   });
 
+  it("serves the resume from its own repo, at a same-origin path", async () => {
+    const { resume } = (await loadSiteFrom(CONTENT_DIR)).profile;
+    expect(resume.source).toMatch(/^https:\/\/raw\.githubusercontent\.com\/starpearl03\/resume\//);
+    expect(resume.href).toBe(`/resume/${resume.file}`);
+    expect(resume.available).toBe(true);
+  });
+
+  it("lets RESUME_URL override the resume source", async () => {
+    const override = "https://example.com/cv.pdf";
+    const { resume } = (await loadSiteFrom(CONTENT_DIR, { resumeUrl: override })).profile;
+    expect(resume.source).toBe(override);
+    expect(resume.available).toBe(true);
+  });
+
   it("is real content, not the sample placeholders", async () => {
     expect((await loadSiteFrom(CONTENT_DIR)).sample).toBe(false);
   });

@@ -1,6 +1,6 @@
 import { buildRecord, greeting, greetingChips } from "@/features/agent";
 import { Companion, type CompanionConfig } from "@/features/companion";
-import { loadSite } from "@/features/content/server";
+import { loadSite, resumeMeta } from "@/features/content/server";
 import { About, Contact, Education, Experience, Intro, Projects } from "@/features/sections";
 import { Stage, TopBar } from "@/features/stage";
 import { resolveSiteUrl } from "@/lib/site-url";
@@ -10,6 +10,8 @@ export default async function Home() {
   const site = await loadSite();
   const record = buildRecord(site);
   const { resume } = site.profile;
+  // Read live from the resume's source (cached), so replacing the PDF updates the card too
+  const meta = await resumeMeta(resume.source);
 
   const companion: CompanionConfig = {
     name: site.profile.name,
@@ -19,9 +21,7 @@ export default async function Home() {
       available: resume.available,
       href: resume.href,
       file: resume.file,
-      pages: resume.pages,
-      size: resume.size,
-      updated: resume.updated,
+      ...meta,
     },
     projects: site.projects.map(({ id, name }) => ({ id, name })),
     ids: {

@@ -21,12 +21,10 @@ domain: felistas.co.zw
 links:
   github: https://github.com/starpearl03
   linkedin: https://www.linkedin.com/in/felistas-charuka
+# The resume lives in its own repo: replace the PDF there to update it. RESUME_URL overrides the source.
 resume:
-  href: /resume/felistas-resume.pdf
   file: felistas-resume.pdf
-  pages: 1
-  size: 271 KB
-  updated: Oct 2026
+  source: https://raw.githubusercontent.com/starpearl03/resume/main/felistas-resume.pdf
 # Search engines only. Never shown on the page, never given to Dusk.
 seo:
   alternateNames:

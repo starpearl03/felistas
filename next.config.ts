@@ -5,8 +5,9 @@ const isDev = process.env.NODE_ENV === "development";
 const vercelLive = process.env.VERCEL_ENV === "preview" ? " https://vercel.live" : "";
 
 // Everything is first-party: fonts are self-hosted by next/font, the AI and email calls happen on the
-// server, and the resume is a same-origin file. 'unsafe-inline' scripts cover Next's inline bootstrap
-// (a nonce would force every page to render dynamically); 'unsafe-eval' is for dev tooling only.
+// server, and the resume is served through a same-origin route. 'unsafe-inline' scripts cover Next's
+// inline bootstrap (a nonce would force every page to render dynamically); 'unsafe-eval' is for dev
+// tooling only.
 const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}${vercelLive}`,
@@ -36,11 +37,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  // The chat route reads content/ at runtime (the offline agent, later the RAG builder's source)
-  // and checks that the resume exists. On Vercel, public/ is served from the CDN rather than
-  // bundled, so both are traced into the function explicitly.
+  // The chat and resume routes read content/ at runtime (the offline agent, the resume's source),
+  // so it is traced into their functions explicitly.
   outputFileTracingIncludes: {
-    "/api/chat": ["./content/**/*", "./public/resume/**/*", "./src/generated/rag-index.json"],
+    "/api/chat": ["./content/**/*", "./src/generated/rag-index.json"],
+    "/resume/[file]": ["./content/**/*"],
   },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];

@@ -1,9 +1,10 @@
 import "server-only";
 
-import { access, readFile, readdir } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { cache } from "react";
 import type { z } from "zod";
+import { env } from "@/lib/env";
 import {
   emphasisParts,
   paragraphs,
@@ -23,13 +24,6 @@ import {
 import type { Site } from "./types";
 
 export const CONTENT_DIR = path.join(process.cwd(), "content");
-export const PUBLIC_DIR = path.join(process.cwd(), "public");
-
-const exists = (file: string) =>
-  access(file).then(
-    () => true,
-    () => false,
-  );
 
 export class ContentError extends Error {
   constructor(
@@ -104,7 +98,10 @@ function strip<T extends { sample: boolean }>(data: T): Omit<T, "sample"> {
 }
 
 /** Reads and validates every file in a content folder. Throws a ContentError naming the bad file. */
-export async function loadSiteFrom(root: string, publicDir = PUBLIC_DIR): Promise<Site> {
+export async function loadSiteFrom(
+  root: string,
+  { resumeUrl }: { resumeUrl?: string } = {},
+): Promise<Site> {
   const [profile, skills, faq, projects, roles, education] = await Promise.all([
     readEntry(root, "profile.md", profileSchema),
     readEntry(root, "skills.md", skillsSchema),
@@ -128,10 +125,7 @@ export async function loadSiteFrom(root: string, publicDir = PUBLIC_DIR): Promis
   return {
     profile: {
       ...strip(profile.data),
-      resume: {
-        ...profile.data.resume,
-        available: await exists(path.join(publicDir, profile.data.resume.href)),
-      },
+      resume: resumeOf(profile.data.resume, resumeUrl),
       line: plainText(profile.data.line),
       lineParts: emphasisParts(profile.data.line),
       about: paragraphs(profile.body),
@@ -151,11 +145,17 @@ export async function loadSiteFrom(root: string, publicDir = PUBLIC_DIR): Promis
   };
 }
 
+/** The resume's source (RESUME_URL wins over content) and the same-origin path it is served at. */
+function resumeOf(data: { file: string; source?: string }, override?: string) {
+  const source = override ?? data.source;
+  return { file: data.file, source, href: `/resume/${data.file}`, available: !!source };
+}
+
 let warned = false;
 
 /** The site content, read once per request (React cache) and validated. */
 export const loadSite = cache(async (): Promise<Site> => {
-  const site = await loadSiteFrom(CONTENT_DIR);
+  const site = await loadSiteFrom(CONTENT_DIR, { resumeUrl: env().RESUME_URL });
   if (site.sample && process.env.NODE_ENV === "production" && !warned) {
     warned = true;
     console.warn(

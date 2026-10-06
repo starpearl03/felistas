@@ -15,7 +15,9 @@ type ProfileData = Data<typeof profileSchema>;
 
 export type Profile = Omit<ProfileData, "resume"> & {
   resume: ProfileData["resume"] & {
-    /** True when the file exists in public/, so download links can be shown */
+    /** Same-origin path the site serves the PDF at, e.g. /resume/felistas-resume.pdf */
+    href: string;
+    /** True when there is a source to serve, so download links can be shown */
     available: boolean;
   };
   /** The line as plain text (emphasis markers removed) */
