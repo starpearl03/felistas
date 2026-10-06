@@ -1,4 +1,5 @@
 import type { DuskUIMessage, ToolIds } from "@/features/agent";
+import type { Education, Profile, Project, Role } from "@/features/content";
 
 /** What the companion needs from content, prepared on the server and passed as props. */
 export type CompanionConfig = {
@@ -13,7 +14,15 @@ export type CompanionConfig = {
     size?: string;
     updated?: string;
   };
-  projects: { id: string; name: string }[];
+  projects: Pick<
+    Project,
+    "id" | "name" | "kind" | "year" | "status" | "desc" | "stack" | "metric" | "metricLabel" | "url"
+  >[];
+  /** For the replies Dusk shows inline in the phone chat (UI-SPEC §9.1) */
+  roles: Pick<Role, "slug" | "role" | "org" | "period" | "current" | "points">[];
+  education: Pick<Education, "slug" | "year" | "title" | "org">[];
+  about: { line: string; facts: Profile["facts"] };
+  contact: { email: string; links: Profile["links"] };
   ids: ToolIds;
 };
 

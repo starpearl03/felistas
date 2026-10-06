@@ -38,6 +38,8 @@ export const viewport: Viewport = {
   themeColor: PALETTE.bg,
   colorScheme: "dark",
   viewportFit: "cover",
+  // Android keyboards resize the layout, so the phone chat's composer stays above them
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

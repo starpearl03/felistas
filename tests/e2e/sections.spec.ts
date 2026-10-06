@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { browse } from "./browse";
 
 const stage = (page: Page) => page.locator("[data-stage]");
 const section = (page: Page, id: string) => page.locator(`[data-sec="${id}"]`);
@@ -7,6 +8,7 @@ test.beforeEach(async ({ page }) => {
   // Instant scrolling keeps the assertions about where the page landed deterministic
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
+  await browse(page);
 });
 
 test("renders every section in order", async ({ page }) => {

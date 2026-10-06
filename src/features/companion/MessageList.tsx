@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { AnyToolName, DuskUIMessage } from "@/features/agent";
 import { useStage } from "@/features/stage";
 import type { CompanionConfig } from "./config";
+import { InlineReply } from "./parts/InlineReply";
 import { ResumeCard } from "./parts/ResumeCard";
 import { RevealText } from "./parts/RevealText";
 import { SourceChips } from "./parts/SourceChips";
@@ -49,11 +50,13 @@ export function MessageList({
       aria-label="Conversation with Dusk"
       className="scrollbar-none flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto [mask-image:linear-gradient(transparent,var(--bg)_28px)] px-1 pt-[18px] pb-2.5"
     >
+      {/* phones: the conversation sits at the bottom, near the thumb, until it fills the log */}
+      <div aria-hidden className="max-desk:flex-1" />
       {messages.map((m) =>
         m.role === "user" ? (
           <p
             key={m.id}
-            className="max-w-[86%] self-end rounded-[16px_16px_5px_16px] bg-acc/13 px-[13px] py-[9px] text-[13.5px] leading-normal [overflow-wrap:anywhere]"
+            className="max-w-[86%] self-end rounded-[16px_16px_5px_16px] bg-acc/13 px-[13px] py-[9px] text-[13.5px] leading-normal [overflow-wrap:anywhere] max-desk:text-[15px]"
           >
             {m.parts.map((p) => (p.type === "text" ? p.text : "")).join("")}
           </p>
@@ -128,6 +131,9 @@ function AssistantMessage({
       {texts.length ? (
         <RevealText text={texts.join("")} animate={animate} onRevealingChange={onRevealingChange} />
       ) : null}
+      {tools.map((t) =>
+        t.ok ? <InlineReply key={t.id} name={t.name} input={t.input} config={config} /> : null,
+      )}
       {resume ? <ResumeCard resume={config.resume} /> : null}
       {settled && message.metadata?.sources?.length ? (
         <SourceChips sources={message.metadata.sources} config={config} />

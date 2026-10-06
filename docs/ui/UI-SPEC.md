@@ -315,15 +315,22 @@ Every section has an eyebrow (`Section / detail` in mono, accent first word), ma
 | 600–899px (tablets, unfolded phones) | The full layout with a narrower column, `clamp(230px, 34vw, 340px)`; section details stack to one column; the section nav shows from 800px, the "Motion" label from 900px |
 | Below 600px (phones)                 | The column becomes a bottom sheet (below)                                                                                                                                 |
 
-### 9.1 Phones (below 600px)
+### 9.1 Phones (below 600px): chat first
 
-- The column becomes a **bottom sheet**: 156px collapsed, 76% expanded, with a .4s ease.
-  - The collapsed sheet shows the 40px sphere slot, "Dusk" with its status, an expand button, a one-line preview of the last AI message, and the composer.
-  - The log and chips appear only when the sheet is expanded.
-  - Asking anything or tapping an "Ask…" link expands the sheet. AI navigation collapses it.
+Phones open on the conversation. The page waits behind it, one tap away.
+
+- **Chat** (the default, `chatOpen`): the companion fills the screen over the dimmed glyph field (veil up to .5).
+  - Top to bottom: the top bar; the **orb**, the sphere docked into a slot of `clamp(112px, 23svh, 196px)` (tapping it focuses the composer); "Dusk", the status and `form · <shape>`; the log, whose messages sit at the bottom near the thumb; the suggestions; the composer (16px text, so iOS never zooms).
+  - Start over and **Browse** sit at the top right.
+  - Dusk's tools still move the page behind the chat, so the orb takes each section's form with its burst. Headings don't fly while the page is hidden.
+  - What a tool opens shows **inline** in the reply, on an accent rule (no boxes): a project (kicker, name, summary, metric, stack, Visit, "See it on the page"), a role (period, title, org, three points), or a section (About: the line and facts; Projects, Experience: ruled rows that ask about each; Education: the entries; Contact: email, GitHub, LinkedIn and "Leave a note with Dusk"). "See it on the page" folds the chat onto that item.
+  - **Suggestions at every step:** before the first question they are a ruled "Try asking" list of serif rows. After that they are one row of chips that swipes sideways. A reply without its own chips (every live answer) gets suggestions from its topic: the next project or role, the stack, other sections, the resume, never what was already asked.
+  - Taps give a light haptic tick where supported, and controls scale slightly while pressed.
+- **Browse** (folded): the page, with the companion as a 184px bar at the bottom (the 40px orb, "Dusk" with its status, a one-line preview of the last reply, and the composer). Focusing the composer, tapping the expand button or any "Ask…" link returns to the chat.
+- The page is hidden with CSS while the chat is open (`:has()`, so it is right before any script runs) and made `inert` by the engine; it fades back in over .4s.
 - The nav and the "Motion" label are hidden; the motion buttons stay.
 - Content panels get 200px of bottom padding, and every two-column layout stacks to one column.
-- The glyph streams are not drawn on mobile.
+- The glyph streams are not drawn on phones.
 
 ---
 

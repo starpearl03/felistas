@@ -30,9 +30,12 @@ export function liveRipples(ripples: readonly Ripple[], now: number): Ripple[] {
   return ripples.filter((r) => now - r.t0 < RIPPLE_MS).slice(-MAX_RIPPLES);
 }
 
-/** Things a click is meant for: controls, text, and the companion. Anywhere else is background. */
+/**
+ * Things a click is meant for: controls and text. Anywhere else is background, including the empty
+ * parts of the companion, which covers the whole screen in the phone chat.
+ */
 const NOT_BACKGROUND =
-  "a, button, input, textarea, select, label, summary, [role='button'], [role='link'], [contenteditable], [tabindex]:not([tabindex='-1']), aside, p, h1, h2, h3, h4, li, dt, dd, blockquote, img, svg";
+  "a, button, input, textarea, select, label, summary, form, [role='button'], [role='link'], [contenteditable], p, h1, h2, h3, h4, li, dt, dd, blockquote, img, svg";
 
 export function isBackgroundTarget(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;

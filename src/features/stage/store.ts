@@ -31,7 +31,7 @@ export type StageState = {
   /** The sphere's current form, written by the engine */
   shape: ShapeName;
   voice: Voice;
-  /** Phones: whether the companion sheet is expanded */
+  /** Phones: whether the conversation fills the screen (the chat) or folds to a bar over the page */
   chatOpen: boolean;
   draft: Draft | null;
   /** A question asked from elsewhere on the page, for the companion to send */
@@ -48,7 +48,8 @@ export const INITIAL_STAGE_STATE: StageState = {
   flash: null,
   shape: "sphere",
   voice: "idle",
-  chatOpen: false,
+  // phones start in the chat (UI-SPEC §9.1); desktops ignore it
+  chatOpen: true,
   draft: null,
   ask: null,
   toast: null,
