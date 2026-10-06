@@ -27,7 +27,11 @@ describe("the resume's details", () => {
     const meta = await resumeMeta(
       "https://raw.githubusercontent.com/starpearl03/resume/main/felistas-resume.pdf",
     );
-    expect(meta).toEqual({ size: "271 KB", updated: "Oct 2026" });
+    expect(meta).toEqual({
+      size: "271 KB",
+      updated: "Oct 2026",
+      changedAt: "2026-10-06T18:36:16.000Z",
+    });
     const api = new URL(String(fetchMock.mock.calls[1][0]));
     expect(api.pathname).toBe("/repos/starpearl03/resume/commits");
     expect(api.searchParams.get("path")).toBe("felistas-resume.pdf");

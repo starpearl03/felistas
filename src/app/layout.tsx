@@ -30,7 +30,8 @@ const display = Big_Shoulders({
 
 /** Search metadata from content/profile.md, like every other fact on the site (see ./seo.ts). */
 export async function generateMetadata(): Promise<Metadata> {
-  return siteMetadata(await loadSite(), resolveSiteUrl(), env().GOOGLE_SITE_VERIFICATION);
+  const { GOOGLE_SITE_VERIFICATION: google, BING_SITE_VERIFICATION: bing } = env();
+  return siteMetadata(await loadSite(), resolveSiteUrl(), { google, bing });
 }
 
 export const viewport: Viewport = {

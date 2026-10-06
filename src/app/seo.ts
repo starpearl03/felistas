@@ -12,7 +12,14 @@ export const pageTitle = (site: Site) =>
 export const pageDescription = ({ profile }: Site) =>
   `${profile.fullName}, ${profile.role.toLowerCase()} in ${profile.location}. ${profile.line}`;
 
-export function siteMetadata(site: Site, base: URL, googleVerification?: string): Metadata {
+/** Search-engine ownership codes, from the HTML-tag verification methods */
+export type SiteVerification = { google?: string; bing?: string };
+
+export function siteMetadata(
+  site: Site,
+  base: URL,
+  { google, bing }: SiteVerification = {},
+): Metadata {
   const { profile } = site;
   const [firstName, ...rest] = profile.fullName.split(" ");
   const title = pageTitle(site);
@@ -52,7 +59,15 @@ export function siteMetadata(site: Site, base: URL, googleVerification?: string)
       },
     },
     formatDetection: { email: false, telephone: false, address: false },
-    ...(googleVerification ? { verification: { google: googleVerification } } : {}),
+    ...(google || bing
+      ? {
+          verification: {
+            ...(google ? { google } : {}),
+            // Bing Webmaster Tools reads <meta name="msvalidate.01">
+            ...(bing ? { other: { "msvalidate.01": bing } } : {}),
+          },
+        }
+      : {}),
   };
 }
 
