@@ -4,6 +4,7 @@ import type { MotionParams } from "../motion";
 import { type FontFamilies, fitCanvas } from "./canvas";
 import type { Placement } from "./geometry";
 import { GLYPHS, PALETTE, type RGB } from "./palette";
+import { liveRipples, RIPPLE_PUSH, type Ripple, rippleBand } from "./ripple";
 
 type Cell = {
   ch: string;
@@ -63,6 +64,7 @@ export class GlyphField {
   private lastDraw = 0;
   private flashUntil = 0;
   private flashTimer: ReturnType<typeof setTimeout> | undefined;
+  private ripples: Ripple[] = [];
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -140,6 +142,11 @@ export class GlyphField {
     this.flashTimer = setTimeout(() => this.setWord(back.word, back.place), ms);
   }
 
+  /** Sends a shockwave out from (x, y); `strength` scales how far it pushes and how bright it lights. */
+  ripple(x: number, y: number, t: number, strength = 1): void {
+    this.ripples = liveRipples([...this.ripples, { x, y, t0: t, strength }], t);
+  }
+
   frame(t: number, f: FieldFrame): void {
     const { ctx, cells, cols, cw, rh } = this;
     if (!ctx || !cells.length) return;
@@ -164,6 +171,8 @@ export class GlyphField {
     const dim = f.motion.dim * f.boost;
     const lights = f.lights.map((l) => ({ ...l, r2: l.r * l.r }));
     const cursor = lights.find((l) => l.cursor);
+    const waves = liveRipples(this.ripples, t);
+    this.ripples = waves;
 
     ctx.clearRect(0, 0, this.W, this.H);
     for (let i = 0; i < cells.length; i++) {
@@ -201,6 +210,24 @@ export class GlyphField {
         r = lerp(r, C[0], k);
         g = lerp(g, C[1], k);
         b = lerp(b, C[2], k);
+      }
+
+      // A background click: the ring lights the glyphs it crosses, scrambles them and pushes them out
+      for (const w of waves) {
+        const dx = x - w.x;
+        const dy = y - w.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        const band = rippleBand(d, t - w.t0, w.strength);
+        if (band < 0.01) continue;
+        const k = Math.min(0.9, band * 0.85);
+        r = lerp(r, cell.h[0], k);
+        g = lerp(g, cell.h[1], k);
+        b = lerp(b, cell.h[2], k);
+        if (d > 1) {
+          x += (dx / d) * band * RIPPLE_PUSH;
+          y += (dy / d) * band * RIPPLE_PUSH;
+        }
+        if (this.rand() < band * 0.22) cell.ch = pick(GLYPHS, this.rand);
       }
 
       // Dusk's signature: the glyphs part around the cursor

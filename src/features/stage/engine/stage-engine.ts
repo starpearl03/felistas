@@ -27,6 +27,7 @@ import { GlyphField, type Light } from "./glyph-field";
 import { createLoop } from "./loop";
 import { PALETTE } from "./palette";
 import { SECTION_SHAPES } from "./shapes";
+import { isBackgroundTarget } from "./ripple";
 import { GlyphSphere } from "./sphere";
 import { drawThread, nextThreadAlpha } from "./thread";
 
@@ -285,6 +286,17 @@ export function createStageEngine({
   };
   const onScroll = () => loop.poke();
 
+  // A click (or tap) on the background sends a shockwave through the field; Still has none (UI-SPEC §7)
+  const RIPPLE_STRENGTH = { still: 0, calm: 0.65, lively: 1 } as const;
+  const onClick = (e: MouseEvent) => {
+    const strength = RIPPLE_STRENGTH[stageStore.get().motion];
+    if (!strength || !isBackgroundTarget(e.target)) return;
+    const rect = root.getBoundingClientRect();
+    field.ripple(e.clientX - rect.left, e.clientY - rect.top, performance.now(), strength);
+    // counts the waves sent, for tests; the loop runs continuously whenever motion isn't Still
+    root.dataset.ripple = String(Number(root.dataset.ripple ?? 0) + 1);
+  };
+
   let resizeTimer: ReturnType<typeof setTimeout> | undefined;
   const onResize = () => {
     clearTimeout(resizeTimer);
@@ -295,6 +307,7 @@ export function createStageEngine({
   reducedMotion.addEventListener("change", syncLoopMode);
   root.addEventListener("pointermove", onPointerMove);
   root.addEventListener("pointerleave", onPointerLeave);
+  root.addEventListener("click", onClick);
   scroller?.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onResize);
 
@@ -319,6 +332,7 @@ export function createStageEngine({
       reducedMotion.removeEventListener("change", syncLoopMode);
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerleave", onPointerLeave);
+      root.removeEventListener("click", onClick);
       scroller?.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       // leave every heading readable if the stage goes away
