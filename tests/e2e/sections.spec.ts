@@ -158,3 +158,20 @@ test.describe("on still without the OS reduced-motion setting", () => {
     expect(landed).toBeLessThan(2);
   });
 });
+
+test("each project links to its repository; one without a repository has no link", async ({
+  page,
+}) => {
+  const detail = page.locator("#project-detail");
+  await page.getByRole("button", { name: /^\d{4} PhishGuard/ }).click();
+  const repo = detail.getByRole("link", { name: /View on GitHub: PhishGuard/ });
+  await expect(repo).toHaveAttribute("href", "https://github.com/starpearl03/phishguard-api");
+  await expect(repo).toHaveAttribute("target", "_blank");
+  await page.getByRole("button", { name: /^\d{4} Sentinel/ }).click();
+  await expect(detail.getByRole("link", { name: /View on GitHub/ })).toHaveAttribute(
+    "href",
+    "https://github.com/starpearl03/aegis-gateway",
+  );
+  await page.getByRole("button", { name: /^\d{4} Staff Portal/ }).click();
+  await expect(detail.getByRole("link", { name: /View on GitHub/ })).toHaveCount(0);
+});

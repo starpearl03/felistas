@@ -190,12 +190,12 @@ test("Ask Dusk links send the question to the conversation", async ({ page }) =>
     const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
     sc.scrollTop = sc.querySelector<HTMLElement>('[data-sec="projects"]')!.offsetTop;
   });
-  await page.getByRole("button", { name: /Ask Dusk about SENTRY/ }).click();
+  await page.getByRole("button", { name: /Ask Dusk about PhishGuard/ }).click();
   // asking opens the phone chat; the answer may wait on the chat runtime's first load
   await expect(async () => {
     const convo = await conversation(page);
-    await expect(convo).toContainText("Tell me about SENTRY", { timeout: 1_000 });
-    await expect(convo).toContainText("SENTRY is phishing email detection", { timeout: 1_000 });
+    await expect(convo).toContainText("Tell me about PhishGuard", { timeout: 1_000 });
+    await expect(convo).toContainText("PhishGuard is phishing email detection", { timeout: 1_000 });
   }).toPass({ timeout: 10_000 });
 });
 

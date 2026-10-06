@@ -47,8 +47,14 @@ export function InlineReply({ name, input, config }: InlineReplyProps) {
         <p className="font-mono text-[11px] leading-relaxed text-fg2">{p.stack.join(" · ")}</p>
         <div className="flex flex-wrap gap-x-5">
           {p.url ? (
-            <TextLink href={p.url} target="_blank" rel="noreferrer" accent icon={<ArrowRight />}>
-              Visit
+            <TextLink
+              href={p.url}
+              target="_blank"
+              rel="noreferrer"
+              accent
+              icon={new URL(p.url).hostname === "github.com" ? <GitHub /> : <ArrowRight />}
+            >
+              {new URL(p.url).hostname === "github.com" ? "View on GitHub" : "Visit"}
             </TextLink>
           ) : null}
           <TextLink icon={<ArrowRight />} onClick={onPage(() => openProject(p.id, p.name))}>

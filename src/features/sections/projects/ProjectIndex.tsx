@@ -1,5 +1,7 @@
 "use client";
 
+import { ArrowRight, GitHub } from "@/components/ui/icons";
+import { TextLink } from "@/components/ui/TextLink";
 import { PROJECT_STATUS, type Project } from "@/features/content";
 import { flashWord, selectProject, useStage } from "@/features/stage";
 import { cn } from "@/lib/cn";
@@ -8,8 +10,12 @@ import { ruledRow } from "../shared/styles";
 
 export type ProjectSummary = Pick<
   Project,
-  "id" | "name" | "kind" | "status" | "year" | "stack" | "desc" | "metric" | "metricLabel"
+  "id" | "name" | "kind" | "status" | "year" | "stack" | "desc" | "metric" | "metricLabel" | "url"
 >;
+
+/** "View on GitHub" for a repository, "Visit" for anything else */
+const linkLabel = (url: string) =>
+  new URL(url).hostname === "github.com" ? "View on GitHub" : "Visit the project";
 
 /** A list of big project names; hover, focus or click selects one and fills the sticky detail. */
 export function ProjectIndex({ projects }: { projects: ProjectSummary[] }) {
@@ -88,7 +94,18 @@ export function ProjectIndex({ projects }: { projects: ProjectSummary[] }) {
             </span>
           ))}
         </p>
-        <div>
+        <div className="flex flex-wrap gap-x-6 gap-y-1">
+          {selected.url ? (
+            <TextLink
+              href={selected.url}
+              target="_blank"
+              rel="noreferrer"
+              icon={new URL(selected.url).hostname === "github.com" ? <GitHub /> : <ArrowRight />}
+              aria-label={`${linkLabel(selected.url)}: ${selected.name} (opens in a new tab)`}
+            >
+              {linkLabel(selected.url)}
+            </TextLink>
+          ) : null}
           <AskDusk question={`Tell me about ${selected.name}`}>
             Ask Dusk about {selected.name}
           </AskDusk>

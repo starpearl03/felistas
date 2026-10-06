@@ -47,8 +47,8 @@
     {
       "q": "Has Felistas used Spring Boot?",
       "expect": [
-        "project:ecommerce-api:card",
-        "project:ecommerce-api:approach",
+        "project:bazaar-api:card",
+        "project:bazaar-api:approach",
         "skills:card",
         "skills:notes"
       ]
@@ -66,18 +66,18 @@
         "role:glow-petroleum:card"
       ]
     },
-    { "q": "Tell me about SENTRY", "expect": ["project:sentry:card"] },
+    { "q": "Tell me about PhishGuard", "expect": ["project:phishguard:card"] },
     {
       "q": "How does the phishing detector give a verdict so fast?",
-      "expect": ["project:sentry:approach", "project:sentry:card"]
+      "expect": ["project:phishguard:approach", "project:phishguard:card"]
     },
     {
-      "q": "What can analysts do on the SENTRY dashboard?",
-      "expect": ["project:sentry:the-dashboard"]
+      "q": "What can analysts do on the PhishGuard dashboard?",
+      "expect": ["project:phishguard:the-dashboard"]
     },
     {
       "q": "How are the extension and dashboard authenticated?",
-      "expect": ["project:sentry:approach"]
+      "expect": ["project:phishguard:approach"]
     },
     { "q": "What is Sentinel?", "expect": ["project:sentinel:card", "project:sentinel:why"] },
     {
@@ -107,22 +107,18 @@
         "role:glow-petroleum:notes"
       ]
     },
-    { "q": "What is the e-commerce API?", "expect": ["project:ecommerce-api:card"] },
+    { "q": "What is the Bazaar e-commerce API?", "expect": ["project:bazaar-api:card"] },
     {
       "q": "Is anything containerised with Docker?",
-      "expect": ["project:ecommerce-api:card", "project:ecommerce-api:approach", "skills:notes"]
+      "expect": ["project:bazaar-api:card", "project:bazaar-api:approach", "skills:notes"]
     },
     {
-      "q": "What does the assessment portal do?",
-      "expect": [
-        "project:assessment-portal:card",
-        "project:assessment-portal:why",
-        "project:assessment-portal:approach"
-      ]
+      "q": "What does ExamFlow, the assessment portal, do?",
+      "expect": ["project:examflow:card", "project:examflow:why", "project:examflow:approach"]
     },
     {
       "q": "How do supervisors grade students on internship?",
-      "expect": ["project:assessment-portal:approach", "project:assessment-portal:card"]
+      "expect": ["project:examflow:approach", "project:examflow:card"]
     },
     {
       "q": "Where has Felistas worked?",
