@@ -39,10 +39,26 @@ test("projects: hovering, clicking and focusing a name fills the detail", async 
 });
 
 test("experience: the ruler starts on the latest role and selects lanes", async ({ page }) => {
-  const detail = page.locator("#role-detail");
+  // every role's detail is rendered (to reserve the tallest height); only the selected one shows
+  const detail = page.locator("#role-detail > :not([inert])");
+  await expect(detail).toHaveCount(1);
   await expect(detail).toContainText("IT & Software Intern");
   await page.getByRole("button", { name: /Software Developer Intern at Melsoft/ }).click();
   await expect(detail).toContainText("school management modules");
+  await expect(page.getByText("school management modules", { exact: false })).toBeVisible();
+});
+
+test("experience: hovering the lanes never moves the heading", async ({ page, isMobile }) => {
+  test.skip(isMobile, "hover needs a pointer");
+  await page.locator('[data-sec="experience"]').scrollIntoViewIfNeeded();
+  const heading = page.locator('[data-sec="experience"] h2');
+  const lanes = page.getByRole("list", { name: "Roles" }).getByRole("button");
+  await expect(heading).toBeVisible();
+  const before = await heading.boundingBox();
+  for (const lane of await lanes.all()) {
+    await lane.hover();
+    expect((await heading.boundingBox())?.y).toBeCloseTo(before?.y ?? 0, 0);
+  }
 });
 
 test("contact shows the email with a copy action", async ({ page }) => {

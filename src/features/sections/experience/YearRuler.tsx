@@ -78,31 +78,44 @@ export function YearRuler({ roles, from, to }: YearRulerProps) {
         </div>
       </div>
 
-      <div
-        id="role-detail"
-        aria-live="polite"
-        className="mt-[34px] grid items-start gap-[clamp(20px,4vw,56px)] desk:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]"
-      >
-        <div>
-          <h3 className="font-serif text-[clamp(34px,3.6vw,54px)] leading-none">{selected.role}</h3>
-          <p className="mt-3 font-mono text-xs tracking-[.06em] text-muted">
-            <b className="font-normal text-acc">{selected.org}</b> · {selected.period}
-            {selected.current ? " · current" : ""}
-          </p>
-          <div className="mt-[18px]">
-            <AskDusk question={`Tell me about ${selected.org}`}>Ask Dusk about this role</AskDusk>
-          </div>
-        </div>
-        <ul className="m-0 grid list-none gap-3.5 p-0">
-          {selected.points.map((pt) => (
-            <li
-              key={pt}
-              className="grid grid-cols-[22px_1fr] text-base leading-[1.55] text-fg2 before:mt-[9px] before:size-[7px] before:rotate-45 before:bg-acc"
+      {/* Every role's detail sits in the same grid cell, so the block always has the height of the
+          tallest one: the centred section never shifts while lanes are hovered */}
+      <div id="role-detail" aria-live="polite" className="mt-[34px] grid">
+        {roles.map((r) => {
+          const on = r.slug === selected.slug;
+          return (
+            <div
+              key={r.slug}
+              inert={!on}
+              aria-hidden={!on}
+              className={cn(
+                "grid items-start gap-[clamp(20px,4vw,56px)] [grid-area:1/1] desk:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]",
+                !on && "invisible",
+              )}
             >
-              {pt}
-            </li>
-          ))}
-        </ul>
+              <div>
+                <h3 className="font-serif text-[clamp(34px,3.6vw,54px)] leading-none">{r.role}</h3>
+                <p className="mt-3 font-mono text-xs tracking-[.06em] text-muted">
+                  <b className="font-normal text-acc">{r.org}</b> · {r.period}
+                  {r.current ? " · current" : ""}
+                </p>
+                <div className="mt-[18px]">
+                  <AskDusk question={`Tell me about ${r.org}`}>Ask Dusk about this role</AskDusk>
+                </div>
+              </div>
+              <ul className="m-0 grid list-none gap-3.5 p-0">
+                {r.points.map((pt) => (
+                  <li
+                    key={pt}
+                    className="grid grid-cols-[22px_1fr] text-base leading-[1.55] text-fg2 before:mt-[9px] before:size-[7px] before:rotate-45 before:bg-acc"
+                  >
+                    {pt}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
       </div>
     </>
   );
