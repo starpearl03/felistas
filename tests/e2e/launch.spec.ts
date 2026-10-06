@@ -82,3 +82,9 @@ test("the resume is served from its repo through our own URL", async ({ request 
   expect((await request.get("/resume/someone-else.pdf")).status()).toBe(404);
   expect(await (await request.get("/sitemap.xml")).text()).toContain("/resume/felistas-resume.pdf");
 });
+
+test("Google Search Console's verification file is served from the root", async ({ request }) => {
+  const res = await request.get("/googlebc5c969621f0344d.html");
+  expect(res.status()).toBe(200);
+  expect(await res.text()).toBe("google-site-verification: googlebc5c969621f0344d.html");
+});
