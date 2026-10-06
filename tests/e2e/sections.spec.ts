@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { pickMotion } from "./motion";
 import { browse } from "./browse";
 
 const stage = (page: Page) => page.locator("[data-stage]");
@@ -144,7 +145,7 @@ test.describe("on still without the OS reduced-motion setting", () => {
   test("navigation jumps instantly", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto("/");
-    await page.getByRole("combobox", { name: "Motion" }).selectOption("still");
+    await pickMotion(page, "still");
     const landed = await page.evaluate(() => {
       const nav = document.querySelector('nav[aria-label="Sections"]')!;
       const button = [...nav.querySelectorAll("button")].find((b) => b.textContent === "Contact")!;

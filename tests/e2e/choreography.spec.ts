@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { pickMotion } from "./motion";
 import { browse } from "./browse";
 
 const stage = (page: Page) => page.locator("[data-stage]");
@@ -68,7 +69,7 @@ test.describe("on lively", () => {
 test.describe("on still", () => {
   test("headings are never hidden and shapes change without a burst", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("combobox", { name: "Motion" }).selectOption("still");
+    await pickMotion(page, "still");
     await expect(page.locator("[data-fly].flying")).toHaveCount(0);
     await goTo(page, "projects");
     await expect(stage(page)).toHaveAttribute("data-shape", "cube");
@@ -79,8 +80,8 @@ test.describe("on still", () => {
   test("switching back to lively re-arms the other headings", async ({ page }) => {
     await page.goto("/");
     await browse(page);
-    await page.getByRole("combobox", { name: "Motion" }).selectOption("still");
-    await page.getByRole("combobox", { name: "Motion" }).selectOption("lively");
+    await pickMotion(page, "still");
+    await pickMotion(page, "lively");
     await expect(heading(page, "education")).toHaveClass(/flying/);
   });
 });
