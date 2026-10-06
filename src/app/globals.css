@@ -173,3 +173,11 @@ body {
     opacity: 0;
   }
 }
+
+/* The motion menu opens with a short drop and fade */
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}

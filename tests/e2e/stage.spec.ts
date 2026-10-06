@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { motionMenu, pickMotion } from "./motion";
 
 const stage = (page: Page) => page.locator("[data-stage]");
 
@@ -33,20 +34,40 @@ test("the glyph field and the sphere render on the intro", async ({ page }) => {
 
 test("starts on lively and remembers the visitor's motion choice", async ({ page }) => {
   await page.goto("/");
-  const motion = page.getByRole("combobox", { name: "Motion" });
-  await expect(motion).toHaveValue("lively");
+  const menu = motionMenu(page);
+  await expect(menu).toHaveText("lively");
   await expect(stage(page)).toHaveAttribute("data-motion", "lively");
-  // a drop-down with all three levels, and no visible "Motion" label
-  await expect(motion.getByRole("option")).toHaveText(["Still", "Calm", "Lively"]);
+  // no visible "Motion" label; the menu lists the three levels with the current one selected
   await expect(page.getByText("Motion", { exact: true })).toHaveCount(0);
-
-  await motion.selectOption("calm");
-  await expect(motion).toHaveValue("calm");
+  await menu.click();
+  const list = page.getByRole("listbox", { name: "Motion" });
+  await expect(list.getByRole("option")).toHaveCount(3);
+  await expect(list.getByRole("option", { selected: true })).toContainText("lively");
+  await list.getByRole("option", { name: /calm/ }).click();
+  await expect(list).toBeHidden();
+  await expect(menu).toHaveText("calm");
   await expect(stage(page)).toHaveAttribute("data-motion", "calm");
 
   await page.reload();
-  await expect(page.getByRole("combobox", { name: "Motion" })).toHaveValue("calm");
+  await expect(motionMenu(page)).toHaveText("calm");
   await expect(stage(page)).toHaveAttribute("data-motion", "calm");
+});
+
+test("the motion menu works from the keyboard and closes on Escape", async ({ page, isMobile }) => {
+  test.skip(isMobile, "keyboard");
+  await page.goto("/");
+  const menu = motionMenu(page);
+  await menu.focus();
+  await page.keyboard.press("ArrowDown");
+  await expect(menu).toHaveAttribute("aria-expanded", "true");
+  await page.keyboard.press("Home");
+  await page.keyboard.press("Enter");
+  await expect(menu).toHaveText("still");
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveAttribute("aria-expanded", "false");
+  await expect(menu).toBeFocused();
 });
 
 test.describe("with reduced motion", () => {
@@ -54,7 +75,7 @@ test.describe("with reduced motion", () => {
 
   test("starts on still and still draws the stage", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("combobox", { name: "Motion" })).toHaveValue("still");
+    await expect(motionMenu(page)).toHaveText("still");
     await expect(stage(page)).toHaveAttribute("data-motion", "still");
     await expect.poll(() => hasPaint(page, "glyphs")).toBe(true);
   });
@@ -69,7 +90,7 @@ test.describe("with reduced motion", () => {
     await page.waitForTimeout(600);
     expect(await fingerprint(page)).toBe(before);
 
-    await page.getByRole("combobox", { name: "Motion" }).selectOption("lively");
+    await pickMotion(page, "lively");
     const start = await fingerprint(page);
     await expect.poll(() => fingerprint(page), { timeout: 3000 }).not.toBe(start);
   });
@@ -84,7 +105,7 @@ test("a click on the background sends a shockwave; controls and Still do not", a
   await page.mouse.click(sky.x, sky.y);
   await expect(stage(page)).toHaveAttribute("data-ripple", "1");
 
-  await page.getByRole("combobox", { name: "Motion" }).selectOption("still");
+  await pickMotion(page, "still");
   await page.mouse.click(sky.x, sky.y);
   await expect(stage(page)).toHaveAttribute("data-ripple", "1");
 });

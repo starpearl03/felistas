@@ -254,7 +254,7 @@ Conversation flows the prototype covers, which production must keep:
 
 ## 7. Motion levels
 
-These are visitor-selectable, from a quiet drop-down at the right of the top bar (the current level in mono uppercase with a chevron, no box and no label; a native `<select>` named "Motion" for assistive tech), and remembered in `localStorage` under `dusk-motion`. **The default is Lively**; visitors with `prefers-reduced-motion: reduce` start on Still.
+These are visitor-selectable, from a quiet drop-down at the right of the top bar: the current level in mono uppercase with a chevron, no label. It opens a dim glass menu (`bg/.9`, blur, hairline border, 8px radius) listing each level in mono with a serif note ("Nothing moves", "Gentle, slower", "The full effect"), the current one marked with an accent dot. It is a select-only combobox named "Motion" (arrows, Home/End, Enter/Space, Escape/Tab, click outside), and remembered in `localStorage` under `dusk-motion`. **The default is Lively**; visitors with `prefers-reduced-motion: reduce` start on Still.
 
 | Level  | Glyph change rate (share of cells per 45 ms) | Field brightness | Cursor light | Sphere spin |
 | ------ | -------------------------------------------- | ---------------- | ------------ | ----------- |
