@@ -59,9 +59,9 @@ test("a chip opens a project and selects it", async ({ page }) => {
   await ask(page, "show projects");
   await expect(stage(page)).toHaveAttribute("data-section", "projects");
   await conversation(page);
-  await chip(page, "Tell me about Sentinel").click();
+  await chip(page, "Tell me about Aegis").click();
   await expect(page.locator("#project-detail")).toContainText("final-year project");
-  await expect(await conversation(page)).toContainText('open_project("sentinel")');
+  await expect(await conversation(page)).toContainText('open_project("aegis")');
 });
 
 test("the resume downloads and its card stays in the conversation", async ({ page }) => {
@@ -239,7 +239,7 @@ test("a live answer shows its sources, and a source opens where it lives", async
     {
       type: "text-delta",
       id: "t",
-      delta: "Sentinel matches faces from CCTV footage against a watch list.",
+      delta: "Aegis matches faces from CCTV footage against a watch list.",
     },
     { type: "text-end", id: "t" },
     {
@@ -249,10 +249,10 @@ test("a live answer shows its sources, and a source opens where it lives", async
         flow: null,
         sources: [
           {
-            id: "project:sentinel:card",
-            title: "Projects · Sentinel",
+            id: "project:aegis:card",
+            title: "Projects · Aegis",
             section: "projects",
-            entityId: "sentinel",
+            entityId: "aegis",
           },
         ],
       },
@@ -267,14 +267,14 @@ test("a live answer shows its sources, and a source opens where it lives", async
     }),
   );
 
-  await ask(page, "What does Sentinel do?");
+  await ask(page, "What does Aegis do?");
   const convo = await conversation(page);
-  await expect(convo).toContainText("Sentinel matches faces");
+  await expect(convo).toContainText("Aegis matches faces");
   // phones tap: a mouse click would leave a hover over the list once the sheet folds away
-  const source = convo.getByRole("button", { name: /Projects · Sentinel/ });
+  const source = convo.getByRole("button", { name: /Projects · Aegis/ });
   await (isMobile ? source.tap() : source.click());
   await expect(stage(page)).toHaveAttribute("data-section", "projects");
-  await expect(page.locator("#project-detail")).toContainText("Sentinel");
+  await expect(page.locator("#project-detail")).toContainText("Aegis");
 });
 
 test.describe("on phones", () => {
@@ -296,19 +296,16 @@ test.describe("on phones", () => {
     await expect(stage(page)).toHaveAttribute("data-shape", "cube");
     await expect(chat).toHaveAttribute("data-open", "true");
 
-    await chat
-      .locator('[data-inline="projects"]')
-      .getByRole("button", { name: /Sentinel/ })
-      .tap();
+    await chat.locator('[data-inline="projects"]').getByRole("button", { name: /Aegis/ }).tap();
     const project = chat.locator('[data-inline="project"]').last();
-    await expect(project).toContainText("Sentinel", { timeout: 10_000 });
+    await expect(project).toContainText("Aegis", { timeout: 10_000 });
     // after the first answer the suggestions become a row of chips
     await expect(chat.getByText("Try asking")).toBeHidden();
 
     await project.getByRole("button", { name: "See it on the page" }).tap();
     await expect(chat).not.toHaveAttribute("data-open");
     await expect(page.locator("main")).toBeVisible();
-    await expect(page.locator("#project-detail")).toContainText("Sentinel");
+    await expect(page.locator("#project-detail")).toContainText("Aegis");
   });
 
   test("Browse folds the chat to a bar, and the composer brings it back", async ({ page }) => {

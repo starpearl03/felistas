@@ -79,17 +79,17 @@
       "q": "How are the extension and dashboard authenticated?",
       "expect": ["project:phishguard:approach"]
     },
-    { "q": "What is Sentinel?", "expect": ["project:sentinel:card", "project:sentinel:why"] },
+    { "q": "What is Aegis?", "expect": ["project:aegis:card", "project:aegis:why"] },
     {
       "q": "How does the face recognition work?",
-      "expect": ["project:sentinel:approach", "project:sentinel:card"]
+      "expect": ["project:aegis:approach", "project:aegis:card"]
     },
-    { "q": "How are crime hotspots found?", "expect": ["project:sentinel:approach"] },
+    { "q": "How are crime hotspots found?", "expect": ["project:aegis:approach"] },
     {
       "q": "What was the final year project?",
       "expect": [
-        "project:sentinel:why",
-        "project:sentinel:card",
+        "project:aegis:why",
+        "project:aegis:card",
         "education:bsc-computer-science:card",
         "education:bsc-computer-science:notes"
       ]
@@ -173,8 +173,8 @@
     { "q": "How long is the resume?", "expect": ["contact:card"] },
     {
       "q": "What is the selected project's stack?",
-      "context": { "section": "projects", "projectId": "sentinel", "roleSlug": null },
-      "expect": ["project:sentinel:card"]
+      "context": { "section": "projects", "projectId": "aegis", "roleSlug": null },
+      "expect": ["project:aegis:card"]
     },
     {
       "q": "What were the main duties in this role?",
