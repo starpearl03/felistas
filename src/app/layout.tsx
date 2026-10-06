@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Big_Shoulders, Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { loadSite } from "@/features/content/server";
+import { env } from "@/lib/env";
 import { PALETTE } from "@/lib/palette";
 import { resolveSiteUrl } from "@/lib/site-url";
 import "./globals.css";
+import { siteMetadata } from "./seo";
 
 // Font roles are defined in docs/ui/UI-SPEC.md §2. Canvas code must read the
 // real family names from these CSS variables, because next/font renames them.
@@ -26,20 +28,9 @@ const display = Big_Shoulders({
   preload: false,
 });
 
-/** Title and description come from content/profile.md, like every other fact on the site. */
+/** Search metadata from content/profile.md, like every other fact on the site (see ./seo.ts). */
 export async function generateMetadata(): Promise<Metadata> {
-  const { profile } = await loadSite();
-  const title = `${profile.name} · ${profile.role}`;
-  const description = `${profile.line} Ask Dusk, the portfolio's AI, anything about ${profile.name}.`;
-  return {
-    metadataBase: resolveSiteUrl(),
-    title,
-    description,
-    alternates: { canonical: "/" },
-    authors: [{ name: profile.name, url: profile.links.github }],
-    openGraph: { type: "website", url: "/", siteName: profile.name, title, description },
-    twitter: { card: "summary_large_image", title, description },
-  };
+  return siteMetadata(await loadSite(), resolveSiteUrl(), env().GOOGLE_SITE_VERIFICATION);
 }
 
 export const viewport: Viewport = {

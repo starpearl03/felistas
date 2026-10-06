@@ -19,6 +19,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("every section passes axe with no serious or critical issues", async ({ page }) => {
+  // six full axe scans: about 20 s on its own, more on a busy machine
+  test.setTimeout(90_000);
   await page.goto("/");
   for (const id of SECTIONS) {
     await page.evaluate((sec) => {
@@ -60,7 +62,7 @@ test("the page is served with security headers and breaks none of them", async (
 
 test("search engines get metadata, a sitemap and a share image", async ({ page, request }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle(/Felistas · /);
+  await expect(page).toHaveTitle(/^Felistas Charuka · Software Engineer/);
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
     "content",
     /opengraph-image/,

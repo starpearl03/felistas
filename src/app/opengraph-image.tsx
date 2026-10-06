@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { loadSite } from "@/features/content/server";
 import { PALETTE, sphereStill } from "@/lib/palette";
 
-export const alt = "Felistas's portfolio, with Dusk the glyph sphere";
+export const alt = "Portfolio share card: the Dusk glyph sphere beside the name, role and line";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -58,7 +58,7 @@ export default async function OpengraphImage() {
         <div style={{ fontSize: 22, letterSpacing: 4, color: PALETTE.acc }}>
           {profile.role.toUpperCase()}
         </div>
-        <div style={{ fontSize: 96, fontWeight: 700, lineHeight: 1 }}>{profile.name}</div>
+        <div style={{ fontSize: 80, fontWeight: 700, lineHeight: 1 }}>{profile.fullName}</div>
         <div style={{ fontSize: 30, lineHeight: 1.35, color: PALETTE.fg2 }}>{profile.line}</div>
         <div style={{ fontSize: 22, color: PALETTE.muted }}>
           {`Ask Dusk anything · ${profile.domain}`}

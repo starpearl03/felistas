@@ -49,7 +49,7 @@ export function Contact({ profile }: { profile: Profile }) {
 
       <footer className="mt-9 flex flex-wrap justify-between gap-3 font-mono text-[11px] text-muted">
         <span>
-          © <CurrentYear /> {profile.name}
+          © <CurrentYear /> {profile.fullName}
         </span>
         <span>Built with Next.js</span>
       </footer>

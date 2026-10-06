@@ -20,7 +20,7 @@ export function Intro({ profile }: { profile: Profile }) {
   return (
     <SectionShell id="home" label="Intro" variant="hero">
       <h1 className="sr-only">
-        {profile.name}, {profile.role}
+        {profile.fullName}, {profile.role} in {profile.location}
       </h1>
 
       <div
