@@ -8,7 +8,7 @@ const config = {
   resume: { available: true },
   projects: [
     { id: "phishguard", name: "PhishGuard" },
-    { id: "sentinel", name: "Sentinel" },
+    { id: "aegis", name: "Aegis" },
   ],
   roles: [
     { slug: "melsoft", org: "Melsoft" },
@@ -40,7 +40,7 @@ describe("what to ask next", () => {
     const m = reply([tool("open_project", { id: "phishguard" }), text("SENTRY is…")]);
     expect(replyFocus(m)).toEqual({ section: "projects", id: "phishguard" });
     expect(suggestions(m, [], config)).toEqual([
-      "Tell me about Sentinel",
+      "Tell me about Aegis",
       "What stack?",
       "Experience",
       "Download resume",
@@ -48,7 +48,7 @@ describe("what to ask next", () => {
   });
 
   it("wraps round to the first project after the last", () => {
-    const m = reply([tool("open_project", { id: "sentinel" })]);
+    const m = reply([tool("open_project", { id: "aegis" })]);
     expect(suggestions(m, [], config)[0]).toBe("Tell me about PhishGuard");
   });
 

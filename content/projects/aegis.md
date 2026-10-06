@@ -1,5 +1,5 @@
 ---
-name: Sentinel
+name: Aegis
 kind: Crime analysis and face recognition
 status: DONE
 year: "2026"
@@ -13,7 +13,7 @@ url: https://github.com/starpearl03/aegis-gateway
 
 ## Why
 
-Sentinel is Felistas's final-year project for the BSc in Computer Science at the University of Zimbabwe: an intelligence system that helps identify suspects and missing people, and shows where crime concentrates.
+Aegis is Felistas's final-year project for the BSc in Computer Science at the University of Zimbabwe: an intelligence system that helps identify suspects and missing people, and shows where crime concentrates.
 
 ## Approach
 

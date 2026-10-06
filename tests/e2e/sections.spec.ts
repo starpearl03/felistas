@@ -30,9 +30,9 @@ test("projects: hovering, clicking and focusing a name fills the detail", async 
   const detail = page.locator("#project-detail");
   await expect(detail).toContainText("phishing detection system");
 
-  await page.getByRole("button", { name: /^\d{4} Sentinel/ }).hover();
+  await page.getByRole("button", { name: /^\d{4} Aegis/ }).hover();
   await expect(detail).toContainText("final-year project");
-  await expect(page.getByRole("button", { name: /^\d{4} Sentinel/ })).toHaveAttribute(
+  await expect(page.getByRole("button", { name: /^\d{4} Aegis/ })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
@@ -167,7 +167,7 @@ test("each project links to its repository; one without a repository has no link
   const repo = detail.getByRole("link", { name: /View on GitHub: PhishGuard/ });
   await expect(repo).toHaveAttribute("href", "https://github.com/starpearl03/phishguard-api");
   await expect(repo).toHaveAttribute("target", "_blank");
-  await page.getByRole("button", { name: /^\d{4} Sentinel/ }).click();
+  await page.getByRole("button", { name: /^\d{4} Aegis/ }).click();
   await expect(detail.getByRole("link", { name: /View on GitHub/ })).toHaveAttribute(
     "href",
     "https://github.com/starpearl03/aegis-gateway",

@@ -61,8 +61,8 @@ test.describe("on lively", () => {
   test("hovering a project spells its name in the glyph field", async ({ page, isMobile }) => {
     test.skip(isMobile, "hover needs a pointer");
     await goTo(page, "projects");
-    await page.getByRole("button", { name: /^\d{4} Sentinel/ }).hover();
-    await expect(stage(page)).toHaveAttribute("data-flash", "SENTINEL");
+    await page.getByRole("button", { name: /^\d{4} Aegis/ }).hover();
+    await expect(stage(page)).toHaveAttribute("data-flash", "AEGIS");
   });
 });
 
@@ -94,11 +94,11 @@ test.describe("with reduced motion on still", () => {
     await page.goto("/");
     await expect(stage(page)).toHaveAttribute("data-motion", "still");
     await goTo(page, "projects");
-    await page.getByRole("button", { name: /^\d{4} Sentinel/ }).hover();
-    await expect(stage(page)).toHaveAttribute("data-flash", "SENTINEL");
+    await page.getByRole("button", { name: /^\d{4} Aegis/ }).hover();
+    await expect(stage(page)).toHaveAttribute("data-flash", "AEGIS");
     const during = await glyphPrint(page);
     // keep the mouse still: only the end of the flash may redraw the field
-    await expect(stage(page)).not.toHaveAttribute("data-flash", "SENTINEL", { timeout: 5000 });
+    await expect(stage(page)).not.toHaveAttribute("data-flash", "AEGIS", { timeout: 5000 });
     await expect.poll(() => glyphPrint(page), { timeout: 2000 }).not.toBe(during);
   });
 });
