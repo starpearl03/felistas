@@ -24,11 +24,10 @@ export const profileSchema = z.strictObject({
   domain: z.string().regex(/^[a-z0-9-]+(\.[a-z0-9-]+)+$/, "expected a domain like felistas.dev"),
   links: z.strictObject({ github: z.url(), linkedin: z.url() }),
   resume: z.strictObject({
-    href: z.string().startsWith("/"),
-    file: text,
-    pages: z.number().int().positive(),
-    size: text,
-    updated: text,
+    /** The download's file name; the site serves it at /resume/<file> */
+    file: z.string().regex(/^[\w.-]+\.pdf$/, "expected a file name like felistas-resume.pdf"),
+    /** Where the PDF really lives (a raw GitHub URL); RESUME_URL overrides it. Absent: not published */
+    source: z.url({ protocol: /^https$/ }).optional(),
   }),
   /** For search engines only: never rendered on the page or given to Dusk */
   seo: z.strictObject({

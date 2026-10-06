@@ -24,11 +24,8 @@ links:
   github: https://github.com/felistas
   linkedin: https://linkedin.com/in/felistas
 resume:
-  href: /resume/felistas-resume.pdf
   file: felistas-resume.pdf
-  pages: 1
-  size: 271 KB
-  updated: Oct 2026
+  source: https://raw.githubusercontent.com/felistas/resume/main/felistas-resume.pdf
 seo:
   alternateNames: [Felistas E. Example]
   keywords: [software engineer]

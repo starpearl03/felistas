@@ -250,7 +250,7 @@ export function buildChunks(site: Site): Chunk[] {
     text: [
       `Email: ${p.email}. Website: ${p.domain}. GitHub: ${p.links.github}. LinkedIn: ${p.links.linkedin}.`,
       r.available
-        ? `The resume is a ${r.pages}-page PDF (${r.size}), updated ${r.updated}.`
+        ? "The resume is a PDF that visitors can download from the page, or ask Dusk for."
         : "The resume is not published yet.",
     ].join(" "),
   });

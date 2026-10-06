@@ -9,9 +9,9 @@ export type CompanionConfig = {
     available: boolean;
     href: string;
     file: string;
-    pages: number;
-    size: string;
-    updated: string;
+    /** Read from the source; absent when it couldn't be */
+    size?: string;
+    updated?: string;
   };
   projects: { id: string; name: string }[];
   ids: ToolIds;

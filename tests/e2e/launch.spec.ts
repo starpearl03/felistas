@@ -73,3 +73,12 @@ test("search engines get metadata, a sitemap and a share image", async ({ page, 
   const og = await request.get("/opengraph-image");
   expect(og.headers()["content-type"]).toBe("image/png");
 });
+
+test("the resume is served from its repo through our own URL", async ({ request }) => {
+  const res = await request.get("/resume/felistas-resume.pdf");
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toBe("application/pdf");
+  expect((await res.body()).subarray(0, 5).toString()).toBe("%PDF-");
+  expect((await request.get("/resume/someone-else.pdf")).status()).toBe(404);
+  expect(await (await request.get("/sitemap.xml")).text()).toContain("/resume/felistas-resume.pdf");
+});

@@ -16,8 +16,9 @@ export function ResumeCard({ resume }: { resume: CompanionConfig["resume"] }) {
         <span>
           <b className="block text-[13.5px] font-medium">{resume.file}</b>
           <span className="text-xs text-muted">
-            {resume.pages} {resume.pages === 1 ? "page" : "pages"} · {resume.size} ·{" "}
-            {resume.updated}
+            {["PDF", resume.size, resume.updated && `updated ${resume.updated}`]
+              .filter(Boolean)
+              .join(" · ")}
           </span>
         </span>
       </div>

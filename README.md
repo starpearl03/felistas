@@ -79,7 +79,6 @@ Today:
 ```
 content/               all site content: Markdown + YAML frontmatter (the real record)
 docs/ui/               approved design: prototype + UI-SPEC.md
-public/resume/         felistas-resume.pdf (add the real file)
 src/app/               routes, root layout, global tokens
 src/features/content/  zod schemas, markdown helpers, server-only loader (loadSite)
 src/lib/               validated env
@@ -98,6 +97,8 @@ Everything the site and Dusk say about Felistas comes from `content/`:
 | `experience/<org>.md` | one role per file with start/end years for the ruler; exactly one `current` |
 | `education/<slug>.md` | degrees and certifications                                                  |
 | `faq.md`              | `## Question` headings with answers                                         |
+
+**The resume** is not in this repo. It lives in [`starpearl03/resume`](https://github.com/starpearl03/resume): replace `felistas-resume.pdf` there and commit, and the site serves the new file at `/resume/felistas-resume.pdf` within half an hour, with its size and date read from GitHub. `resume.source` in `profile.md` points at it; setting `RESUME_URL` serves a different https URL without a commit.
 
 The build validates every file and fails with the file name and field if something is wrong. Remove `sample: true` from each file as real content replaces the placeholders.
 
@@ -123,6 +124,5 @@ tests/                    unit, e2e (Playwright), rag golden set
 ## Before launch
 
 - [ ] Replace the sample content in `content/` with real details.
-- [ ] Add `public/resume/felistas-resume.pdf`.
 - [ ] Set the environment variables on Vercel and verify the Resend sending domain.
 - [ ] Go through the acceptance checklist in `docs/ui/UI-SPEC.md` §12.
