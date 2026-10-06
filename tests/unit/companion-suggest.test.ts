@@ -7,7 +7,7 @@ const config = {
   greetingChips: ["I'm a recruiter", "I'm a developer", "Download resume", "Show projects"],
   resume: { available: true },
   projects: [
-    { id: "sentry", name: "SENTRY" },
+    { id: "phishguard", name: "PhishGuard" },
     { id: "sentinel", name: "Sentinel" },
   ],
   roles: [
@@ -37,8 +37,8 @@ describe("what to ask next", () => {
   });
 
   it("follows a project with the next one, the stack and more", () => {
-    const m = reply([tool("open_project", { id: "sentry" }), text("SENTRY is…")]);
-    expect(replyFocus(m)).toEqual({ section: "projects", id: "sentry" });
+    const m = reply([tool("open_project", { id: "phishguard" }), text("SENTRY is…")]);
+    expect(replyFocus(m)).toEqual({ section: "projects", id: "phishguard" });
     expect(suggestions(m, [], config)).toEqual([
       "Tell me about Sentinel",
       "What stack?",
@@ -49,7 +49,7 @@ describe("what to ask next", () => {
 
   it("wraps round to the first project after the last", () => {
     const m = reply([tool("open_project", { id: "sentinel" })]);
-    expect(suggestions(m, [], config)[0]).toBe("Tell me about SENTRY");
+    expect(suggestions(m, [], config)[0]).toBe("Tell me about PhishGuard");
   });
 
   it("reads the topic of a live answer from its sources", () => {

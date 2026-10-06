@@ -1,5 +1,5 @@
 ---
-name: SENTRY
+name: PhishGuard
 kind: Phishing email detection
 status: WIP
 year: "2026"
@@ -8,7 +8,7 @@ stack: [Python, FastAPI, Next.js, TypeScript]
 desc: A phishing detection system for Gmail. A browser extension gets a verdict in under a second, and analysts review flagged email on a live dashboard.
 metric: "4"
 metricLabel: stages, with a sub-second first verdict
-url: https://github.com/starpearl03/sentry-api
+url: https://github.com/starpearl03/phishguard-api
 ---
 
 ## Problem
@@ -23,4 +23,4 @@ The API is a modular monolith with two separate auth surfaces: JWTs for dashboar
 
 ## The dashboard
 
-A Next.js 16 and React 19 dashboard gives analysts live stats, a filterable history, per-email detail with a breakdown of every link, manual review and overrides, and admin tools to manage users and block extension installs.
+A Next.js 16 and React 19 dashboard (its own repository, phishguard-ui) gives analysts live stats, a filterable history, per-email detail with a breakdown of every link, manual review and overrides, and admin tools to manage users and block extension installs.

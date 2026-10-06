@@ -6,7 +6,7 @@ location: Harare, Zimbabwe
 # *word* marks the accent word in the intro line
 line: Full-stack web apps taken from first commit to live deployment, and the *systems* that keep them running.
 availability: Open to software engineering and IT roles
-now: Building SENTRY, a phishing email detection system, after a year shipping software and running IT at Glow Petroleum.
+now: Building PhishGuard, a phishing email detection system, after a year shipping software and running IT at Glow Petroleum.
 facts:
   - label: Focus
     value: Full-stack web and IT systems

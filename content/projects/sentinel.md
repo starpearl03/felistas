@@ -8,7 +8,7 @@ stack: [Python, Flask, OpenCV, InsightFace]
 desc: Final-year AI project that matches faces from CCTV footage against a watch list, sends community safety alerts and maps crime patterns over time.
 metric: AI
 metricLabel: final-year project, University of Zimbabwe
-url: https://github.com/starpearl03/sentinel
+url: https://github.com/starpearl03/aegis-gateway
 ---
 
 ## Why

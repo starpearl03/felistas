@@ -1,5 +1,5 @@
 ---
-name: Assessment Portal
+name: ExamFlow
 kind: Internship assessment platform
 status: DONE
 year: "2025"
@@ -8,7 +8,7 @@ stack: [PHP, MySQL, JavaScript]
 desc: A web platform for assessing students on internship, with tasks, weekly reports, grading and role-based access for students, supervisors and assessors.
 metric: "3"
 metricLabel: roles, student to supervisor to assessor
-url: https://github.com/starpearl03/online-assessment-portal
+url: https://github.com/starpearl03/examflow-portal
 ---
 
 ## Why

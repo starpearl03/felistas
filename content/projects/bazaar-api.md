@@ -1,5 +1,5 @@
 ---
-name: E-commerce API
+name: Bazaar API
 kind: REST backend
 status: DONE
 year: "2025"
@@ -8,7 +8,7 @@ stack: [Java, Spring Boot, MongoDB, Docker]
 desc: A RESTful e-commerce API with a product catalogue, cart management and order processing, containerised with Docker.
 metric: "3"
 metricLabel: domains, catalogue to cart to orders
-url: https://github.com/starpearl03/spring-ecommerce-api
+url: https://github.com/starpearl03/bazaar-api
 ---
 
 ## Why

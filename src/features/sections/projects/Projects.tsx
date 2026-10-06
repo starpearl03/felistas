@@ -7,7 +7,7 @@ import { ProjectIndex, type ProjectSummary } from "./ProjectIndex";
 export function Projects({ projects }: { projects: Project[] }) {
   // Only what the index renders crosses to the client
   const summaries: ProjectSummary[] = projects.map(
-    ({ id, name, kind, status, year, stack, desc, metric, metricLabel }) => ({
+    ({ id, name, kind, status, year, stack, desc, metric, metricLabel, url }) => ({
       id,
       name,
       kind,
@@ -17,6 +17,7 @@ export function Projects({ projects }: { projects: Project[] }) {
       desc,
       metric,
       metricLabel,
+      url,
     }),
   );
 
