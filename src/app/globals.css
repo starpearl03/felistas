@@ -115,7 +115,7 @@
   }
   /* Headings fly out of the sphere: hidden until their letters land, then fade in (UI-SPEC §5.3) */
   [data-fly] {
-    transition: opacity 0.45s ease;
+    transition: opacity 0.42s ease;
   }
   [data-fly].flying {
     opacity: 0;

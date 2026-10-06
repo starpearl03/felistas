@@ -13,8 +13,17 @@ export const envSchema = z.object({
   GEMINI_API_KEY: optional,
   GEMINI_MODEL: optional.transform((v) => v ?? "gemini-flash-lite-latest"),
   RESEND_API_KEY: optional,
+  /** Felistas's inbox: visitor messages arrive here, and the visitor's receipt replies here */
   CONTACT_TO_EMAIL: optional.pipe(z.email().optional()),
-  CONTACT_FROM_EMAIL: optional,
+  /** The sender of every email: "noreply@felistas.co.zw" or "Dusk <noreply@felistas.co.zw>" */
+  CONTACT_FROM_EMAIL: optional.pipe(
+    z
+      .string()
+      .refine((v) => z.email().safeParse(v.match(/<([^<>]+)>$/)?.[1] ?? v).success, {
+        message: 'expected an address like "Dusk <noreply@felistas.co.zw>"',
+      })
+      .optional(),
+  ),
   /** Where the resume PDF lives; overrides resume.source in content/profile.md */
   RESUME_URL: optional.pipe(z.url({ protocol: /^https$/ }).optional()),
   /** Google Search Console's HTML-tag verification code, if the site is verified that way */

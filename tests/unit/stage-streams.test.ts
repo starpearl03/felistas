@@ -57,8 +57,8 @@ describe("glyph streams", () => {
   });
 
   it("winds the helix's two strands on opposite sides", () => {
-    const a = streamPoint("helix", from, to, 0.3, 0, geo);
-    const b = streamPoint("helix", from, to, 0.3, 1, geo);
+    const a = streamPoint("helix", from, to, 0.2, 0, geo);
+    const b = streamPoint("helix", from, to, 0.2, 1, geo);
     const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
     expect(Math.hypot(a.x - mid.x, a.y - mid.y)).toBeGreaterThan(5);
     expect(Math.sign(a.z)).not.toBe(Math.sign(b.z));

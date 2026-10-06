@@ -68,7 +68,7 @@ test.describe("on lively", () => {
 test.describe("on still", () => {
   test("headings are never hidden and shapes change without a burst", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "still" }).click();
+    await page.getByRole("combobox", { name: "Motion" }).selectOption("still");
     await expect(page.locator("[data-fly].flying")).toHaveCount(0);
     await goTo(page, "projects");
     await expect(stage(page)).toHaveAttribute("data-shape", "cube");
@@ -79,8 +79,8 @@ test.describe("on still", () => {
   test("switching back to lively re-arms the other headings", async ({ page }) => {
     await page.goto("/");
     await browse(page);
-    await page.getByRole("button", { name: "still" }).click();
-    await page.getByRole("button", { name: "lively" }).click();
+    await page.getByRole("combobox", { name: "Motion" }).selectOption("still");
+    await page.getByRole("combobox", { name: "Motion" }).selectOption("lively");
     await expect(heading(page, "education")).toHaveClass(/flying/);
   });
 });

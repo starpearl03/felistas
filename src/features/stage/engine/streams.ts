@@ -54,7 +54,7 @@ function circuit(from: Point, to: Point, u: number, lane: number): StreamPoint {
   const b = Math.abs(to.y - from.y);
   const c = Math.abs(to.x - mx);
   const total = a + b + c || 1;
-  let d = stepped(u, 8) * total;
+  let d = stepped(u, 5) * total;
   if (d <= a) return { x: from.x + Math.sign(mx - from.x) * d, y: from.y, z: 0.6 };
   d -= a;
   if (d <= b) return { x: mx, y: from.y + Math.sign(to.y - from.y) * d, z: 0.6 };
@@ -115,8 +115,8 @@ export function streamPoint(
     case "spiral": {
       // loops around the path like a coil wound off the torus
       const base = threadPoint(from, to, u);
-      const phi = u * TAU * 3 + lane * 2.1;
-      const rad = 30 * env * (1 - u * 0.35);
+      const phi = u * TAU * 2 + lane * 2.1;
+      const rad = 20 * env * (1 - u * 0.35);
       return {
         x: base.x + nx * Math.cos(phi) * rad + dx * Math.sin(phi) * rad * 0.45,
         y: base.y + ny * Math.cos(phi) * rad + dy * Math.sin(phi) * rad * 0.45,
@@ -126,8 +126,8 @@ export function streamPoint(
     case "helix": {
       // two strands winding around each other, half a turn apart
       const base = threadPoint(from, to, u);
-      const phi = u * TAU * 2.2 + lane * Math.PI;
-      const amp = 24 * Math.pow(env, 0.7);
+      const phi = u * TAU * 1.6 + lane * Math.PI;
+      const amp = 16 * Math.pow(env, 0.7);
       return {
         x: base.x + nx * Math.sin(phi) * amp,
         y: base.y + ny * Math.sin(phi) * amp,
@@ -168,15 +168,16 @@ type Mote = {
 
 const RATE: Record<Motion, { every: number; dur: number }> = {
   still: { every: 0, dur: 0 },
-  calm: { every: 110, dur: 2300 },
-  lively: { every: 70, dur: 1750 },
+  // a few glyphs at a time, drifting: noticeable, never busy
+  calm: { every: 560, dur: 4200 },
+  lively: { every: 340, dur: 3400 },
 };
 
 /** Glyphs frozen along the path on Still: the connection shows, nothing moves. */
 const STILL_STOPS = [0.16, 0.34, 0.52, 0.7, 0.86];
 
-const ARRIVAL_PULSE_MS = 420;
-const MAX_MOTES = 72;
+const ARRIVAL_PULSE_MS = 700;
+const MAX_MOTES = 16;
 
 export type StreamFrame = {
   geo: Circle;
@@ -250,29 +251,23 @@ export class GlyphStreams {
         continue;
       }
       const from = { x: geo.x + m.rx * geo.R, y: geo.y + m.ry * geo.R };
-      // a short comet tail: two fainter copies a little behind
-      for (let k = 2; k >= 0; k--) {
-        const uk = u - k * 0.022;
-        if (uk <= 0) continue;
-        const p = streamPoint(m.style, from, target, uk, m.lane, geo);
-        const depth = (p.z + 1) / 2;
-        const settle = smoothstep(clamp((uk - 0.78) / 0.22));
-        const fadeIn = clamp(uk / 0.08);
-        const a = f.alpha * fadeIn * (0.35 + depth * 0.65) * (k === 0 ? 1 : 0.32 / k);
-        if (a <= 0.01) continue;
-        const size = lerp(m.size, 11, smoothstep(uk)) * (0.8 + depth * 0.35);
-        // arriving glyphs decode into the label's letters
-        const ch =
-          settle > 0.5 && f.label
-            ? f.label[(m.lane * 3 + Math.floor(m.t0 / 120)) % f.label.length]
-            : uk > 0.3 && Math.floor(t / 90 + m.t0) % 7 === 0
-              ? GLYPHS[Math.floor(m.t0 + t / 90) % GLYPHS.length]
-              : m.ch;
-        const c = settle > 0 ? PALETTE.accent : PALETTE.light;
-        ctx.font = `${size.toFixed(1)}px ${f.mono}`;
-        ctx.fillStyle = rgba(c, Number(a.toFixed(3)));
-        ctx.fillText(ch, p.x, p.y);
-      }
+      // eased, so each glyph drifts off the sphere and settles into the label
+      const e = smoothstep(u);
+      const p = streamPoint(m.style, from, target, e, m.lane, geo);
+      const depth = (p.z + 1) / 2;
+      const settle = smoothstep(clamp((u - 0.7) / 0.3));
+      // fades in as it leaves and out as it lands, so nothing pops
+      const a = f.alpha * clamp(u / 0.15) * clamp((1 - u) / 0.12) * (0.3 + depth * 0.45);
+      if (a <= 0.01) continue;
+      const size = lerp(m.size, 10, e) * (0.85 + depth * 0.25);
+      // arriving glyphs decode, once, into a letter of the label
+      const ch =
+        settle > 0.5 && f.label
+          ? f.label[(m.lane * 3 + Math.floor(m.t0 / 120)) % f.label.length]
+          : m.ch;
+      ctx.font = `${size.toFixed(1)}px ${f.mono}`;
+      ctx.fillStyle = rgba(settle > 0.5 ? PALETTE.accent : PALETTE.light, Number(a.toFixed(3)));
+      ctx.fillText(ch, p.x, p.y);
     }
 
     // the anchor drinks the glyphs in: it swells a little each time one lands
@@ -300,9 +295,9 @@ export class GlyphStreams {
 
   private drawAnchor(ctx: CanvasRenderingContext2D, at: Point, alpha: number, pulse: number) {
     if (pulse > 0.01) {
-      ctx.fillStyle = rgba(PALETTE.accent, 0.18 * pulse * alpha);
+      ctx.fillStyle = rgba(PALETTE.accent, 0.12 * pulse * alpha);
       ctx.beginPath();
-      ctx.arc(at.x, at.y, 4 + pulse * 6, 0, TAU);
+      ctx.arc(at.x, at.y, 4 + pulse * 4, 0, TAU);
       ctx.fill();
     }
     ctx.fillStyle = rgba(PALETTE.accent, alpha);

@@ -1,14 +1,16 @@
 // Section headings fly out of the sphere letter by letter (UI-SPEC §5.3).
 // A heading marked [data-fly] is hidden with `.flying` until its letters land, then fades in.
-import { clamp, lerp, smoothstep } from "@/lib/math";
+import { clamp, lerp, smootherstep } from "@/lib/math";
 import type { Circle } from "./geometry";
 import { GLYPHS, PALETTE, rgba } from "./palette";
 
-export const FLY_MS = 950;
-export const LETTER_DELAY_MS = 24;
-/** After this share of its flight a letter shows its real glyph, colour and font */
-export const SETTLE_AT = 0.72;
-const FADE_OUT_MS = 380;
+export const FLY_MS = 1250;
+export const LETTER_DELAY_MS = 20;
+/** Over this share of its flight a letter dissolves from a glyph into its real character */
+export const SETTLE_FROM = 0.45;
+export const SETTLE_TO = 0.85;
+/** The canvas letters fade while the real heading fades in over them (CSS, the same time) */
+const FADE_OUT_MS = 420;
 export const FLYING_CLASS = "flying";
 
 type Letter = {
@@ -32,7 +34,7 @@ export const flightDuration = (count: number): number =>
 
 /** A letter's eased progress at `elapsed` ms, 0 before it launches and 1 once landed. */
 export const letterProgress = (elapsed: number, delay: number): number =>
-  smoothstep(clamp((elapsed - delay) / FLY_MS));
+  smootherstep(clamp((elapsed - delay) / FLY_MS));
 
 export class Flights {
   private flights: Flight[] = [];
@@ -118,23 +120,33 @@ export class Flights {
       f.letters.forEach((l, i) => {
         const raw = clamp((elapsed - l.delay) / FLY_MS);
         if (raw <= 0) return;
-        const e = smoothstep(raw);
+        const e = smootherstep(raw);
         const rect = l.range.getBoundingClientRect();
         const tx = rect.left - origin.left + rect.width / 2;
         const ty = rect.top - origin.top + rect.height / 2;
         const sx = geo.x + Math.cos(l.angle) * geo.R * l.radius;
         const sy = geo.y + Math.sin(l.angle) * geo.R * l.radius;
-        const mx = lerp(sx, tx, 0.45);
-        const my = Math.min(sy, ty) - 90 - l.radius * 80;
+        // a low, even arc
+        const mx = lerp(sx, tx, 0.5);
+        const my = Math.min(sy, ty) - 46 - l.radius * 44;
         const u = 1 - e;
         const x = u * u * sx + 2 * u * e * mx + e * e * tx;
         const y = u * u * sy + 2 * u * e * my + e * e * ty;
-        const settled = raw > SETTLE_AT;
         const size = lerp(Math.max(9, geo.R * 0.11), l.size, e);
         ctx.font = l.font.replace("SIZE", size.toFixed(1));
-        ctx.globalAlpha = fade * (settled ? 1 : 0.55 + e * 0.45);
-        ctx.fillStyle = settled ? l.color : glyphColour;
-        ctx.fillText(settled ? l.ch : GLYPHS[(i * 7 + Math.floor(t / 60)) % GLYPHS.length], x, y);
+        // the glyph dissolves into the real letter instead of switching
+        const settle = smootherstep(clamp((raw - SETTLE_FROM) / (SETTLE_TO - SETTLE_FROM)));
+        const appear = clamp(raw / 0.12);
+        if (settle < 1) {
+          ctx.globalAlpha = fade * appear * (1 - settle) * (0.6 + e * 0.4);
+          ctx.fillStyle = glyphColour;
+          ctx.fillText(GLYPHS[(i * 7 + Math.floor(l.delay / 60)) % GLYPHS.length], x, y);
+        }
+        if (settle > 0) {
+          ctx.globalAlpha = fade * settle;
+          ctx.fillStyle = l.color;
+          ctx.fillText(l.ch, x, y);
+        }
       });
       ctx.globalAlpha = 1;
     }

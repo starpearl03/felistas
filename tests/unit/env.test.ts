@@ -17,6 +17,13 @@ describe("parseEnv", () => {
 
   it("rejects a malformed contact email", () => {
     expect(() => parseEnv({ CONTACT_TO_EMAIL: "not-an-email" })).toThrow(/CONTACT_TO_EMAIL/);
+    expect(() => parseEnv({ CONTACT_FROM_EMAIL: "Dusk noreply" })).toThrow(/CONTACT_FROM_EMAIL/);
+    expect(
+      parseEnv({ CONTACT_FROM_EMAIL: "Dusk <noreply@felistas.co.zw>" }).CONTACT_FROM_EMAIL,
+    ).toBe("Dusk <noreply@felistas.co.zw>");
+    expect(parseEnv({ CONTACT_FROM_EMAIL: "noreply@felistas.co.zw" }).CONTACT_FROM_EMAIL).toBe(
+      "noreply@felistas.co.zw",
+    );
   });
 
   it("leaves the site url to resolveSiteUrl, so a bad value cannot break the build", () => {
