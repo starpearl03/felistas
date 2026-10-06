@@ -15,7 +15,13 @@ const CANDIDATES = 20;
  * and score near 0 (the name alone, in almost every chunk, adds about 0.03).
  */
 export const MIN_BM25 = 1;
-export const MIN_COSINE = 0.62;
+/**
+ * Hybrid only, and only when BM25 is also weak. Calibrated on the golden set with
+ * gemini-embedding-001 (768 dims): any question naming the person scores about 0.70 on the name
+ * alone ("Is Felistas married?" 0.696), while answerable questions without a keyword match score
+ * from 0.715 up. Questions that miss both are flagged; the prompt then asks for a careful answer.
+ */
+export const MIN_COSINE = 0.75;
 
 /** Page-context boosts, in units of a first-place RRF vote */
 const ENTITY_BOOST = 0.5;
@@ -81,6 +87,28 @@ const profileHits = (index: RagIndex): Scored[] =>
     .filter((c) => c.id.startsWith(PROFILE_PREFIX))
     .map((c, i) => ({ id: c.id, score: 1 / (i + 1) }));
 
+/** "this role", "that project", "it": the question points at what the visitor has selected */
+const POINTS_AT_PAGE = /\b(this|that|it|its|selected|here|current)\b/i;
+
+/**
+ * The selected project's or role's chunks (card first) as one more ranked list, when the question
+ * points at the page. A boost alone can't help: those chunks may share no word with "this role".
+ */
+function selectedList(
+  index: RagIndex,
+  query: string,
+  ctx: PageContext | null | undefined,
+): Scored[] {
+  if (!ctx || !POINTS_AT_PAGE.test(query)) return [];
+  const id =
+    ctx.section === "projects" ? ctx.projectId : ctx.section === "experience" ? ctx.roleSlug : null;
+  if (!id) return [];
+  return index.chunks
+    .filter((c) => c.section === ctx.section && c.entityId === id)
+    .sort((a, b) => Number(b.kind === "card") - Number(a.kind === "card"))
+    .map((c, i) => ({ id: c.id, score: 1 / (i + 1) }));
+}
+
 /** Fuses the ranked lists, boosts what the visitor is looking at, and keeps the top few. */
 function fuse(index: RagIndex, lists: Scored[][], ctx: PageContext | null | undefined): Hit[] {
   const byId = new Map(index.chunks.map((c) => [c.id, c]));
@@ -105,7 +133,7 @@ export function retrieveLexical(
   }
   const lexical = bm25(index, query, CANDIDATES);
   return {
-    hits: fuse(index, [lexical], context),
+    hits: fuse(index, [lexical, selectedList(index, query, context)], context),
     lowConfidence: (lexical[0]?.score ?? 0) < MIN_BM25,
     mode: "lexical",
   };
@@ -129,7 +157,7 @@ export async function retrieve(
   const lexical = bm25(index, query, CANDIDATES);
   const semantic = dense(index, vector, CANDIDATES);
   return {
-    hits: fuse(index, [lexical, semantic], context),
+    hits: fuse(index, [lexical, semantic, selectedList(index, query, context)], context),
     lowConfidence: (lexical[0]?.score ?? 0) < MIN_BM25 && (semantic[0]?.score ?? 0) < MIN_COSINE,
     mode: "hybrid",
   };

@@ -17,14 +17,15 @@ import {
   numberSources,
   type RagIndex,
 } from "@/features/agent/server";
-import { CONTENT_DIR, loadSiteFrom } from "@/features/content/server";
+import { loadSiteFrom } from "@/features/content/server";
+import { FIXTURE_CONTENT } from "../fixtures/paths";
 import { createRateLimiter } from "@/lib/rate-limit";
 
 let record: AgentRecord;
 let index: RagIndex;
 
 beforeAll(async () => {
-  const site = await loadSiteFrom(CONTENT_DIR);
+  const site = await loadSiteFrom(FIXTURE_CONTENT);
   record = buildRecord(site);
   index = buildIndex(buildChunks(site), site.profile.name);
 });
@@ -160,13 +161,13 @@ describe("system prompt", () => {
     expect(prompt).toContain("ledgerline (Ledgerline)");
     expect(prompt).toContain("with the project Pulse selected");
     expect(prompt).toContain("You cannot send email");
-    expect(prompt).not.toContain("nothing in the record clearly matches");
+    expect(prompt).not.toContain("retrieval is unsure");
   });
 
   it("warns the model when retrieval found nothing", () => {
     const prompt = buildSystemPrompt({ record, sources: [], context: null, lowConfidence: true });
     expect(prompt).toContain("None found.");
-    expect(prompt).toContain("nothing in the record clearly matches");
+    expect(prompt).toContain("retrieval is unsure");
   });
 });
 

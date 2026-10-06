@@ -58,9 +58,9 @@ test("a chip opens a project and selects it", async ({ page }) => {
   await ask(page, "show projects");
   await expect(stage(page)).toHaveAttribute("data-section", "projects");
   await conversation(page);
-  await chip(page, "Tell me about Atlas").click();
-  await expect(page.locator("#project-detail")).toContainText("40k");
-  await expect(await conversation(page)).toContainText('open_project("atlas")');
+  await chip(page, "Tell me about Sentinel").click();
+  await expect(page.locator("#project-detail")).toContainText("final-year project");
+  await expect(await conversation(page)).toContainText('open_project("sentinel")');
 });
 
 test("the resume downloads and its card stays in the conversation", async ({ page }) => {
@@ -125,10 +125,14 @@ test("Ask Dusk links send the question to the conversation", async ({ page }) =>
     const sc = document.querySelector<HTMLElement>("[data-scroller]")!;
     sc.scrollTop = sc.querySelector<HTMLElement>('[data-sec="projects"]')!.offsetTop;
   });
-  await page.getByRole("button", { name: /Ask Dusk about Ledgerline/ }).click();
-  const convo = await conversation(page);
-  await expect(convo).toContainText("Tell me about Ledgerline");
-  await expect(convo).toContainText("Ledgerline is payments infrastructure");
+  await page.getByRole("button", { name: /Ask Dusk about SENTRY/ }).click();
+  // On phones the answer's open_project folds the sheet whenever it lands (the runtime may still
+  // be loading), so reopen until the whole exchange is readable
+  await expect(async () => {
+    const convo = await conversation(page);
+    await expect(convo).toContainText("Tell me about SENTRY", { timeout: 1_000 });
+    await expect(convo).toContainText("SENTRY is phishing email detection", { timeout: 1_000 });
+  }).toPass({ timeout: 10_000 });
 });
 
 test("start over returns to the greeting", async ({ page }) => {
@@ -159,12 +163,19 @@ test("the intro resume link is a plain download, not a chat request", async ({ p
   await expect(link).toHaveAttribute("download", "felistas-resume.pdf");
 });
 
-test("a live answer shows its sources, and a source opens where it lives", async ({ page }) => {
+test("a live answer shows its sources, and a source opens where it lives", async ({
+  page,
+  isMobile,
+}) => {
   // A live (Gemini) reply as the server streams it; CI has no key, so the route is mocked
   const chunks = [
     { type: "start", messageMetadata: { mode: "live" } },
     { type: "text-start", id: "t" },
-    { type: "text-delta", id: "t", delta: "Pulse streams service health to on-call engineers." },
+    {
+      type: "text-delta",
+      id: "t",
+      delta: "Sentinel matches faces from CCTV footage against a watch list.",
+    },
     { type: "text-end", id: "t" },
     {
       type: "finish",
@@ -173,10 +184,10 @@ test("a live answer shows its sources, and a source opens where it lives", async
         flow: null,
         sources: [
           {
-            id: "project:pulse:card",
-            title: "Projects · Pulse",
+            id: "project:sentinel:card",
+            title: "Projects · Sentinel",
             section: "projects",
-            entityId: "pulse",
+            entityId: "sentinel",
           },
         ],
       },
@@ -191,12 +202,14 @@ test("a live answer shows its sources, and a source opens where it lives", async
     }),
   );
 
-  await ask(page, "What does Pulse do?");
+  await ask(page, "What does Sentinel do?");
   const convo = await conversation(page);
-  await expect(convo).toContainText("Pulse streams service health");
-  await convo.getByRole("button", { name: /Projects · Pulse/ }).click();
+  await expect(convo).toContainText("Sentinel matches faces");
+  // phones tap: a mouse click would leave a hover over the list once the sheet folds away
+  const source = convo.getByRole("button", { name: /Projects · Sentinel/ });
+  await (isMobile ? source.tap() : source.click());
   await expect(stage(page)).toHaveAttribute("data-section", "projects");
-  await expect(page.locator("#project-detail")).toContainText("Pulse");
+  await expect(page.locator("#project-detail")).toContainText("Sentinel");
 });
 
 test.describe("on phones", () => {
@@ -208,7 +221,8 @@ test.describe("on phones", () => {
     await sheet.getByRole("button", { name: "Open the conversation" }).tap();
     await expect(sheet).toHaveAttribute("data-open", "true");
     await chip(page, "Show projects").tap();
-    await expect(stage(page)).toHaveAttribute("data-section", "projects");
+    // the answer may wait on the chat runtime's first load, which is slow under a busy test run
+    await expect(stage(page)).toHaveAttribute("data-section", "projects", { timeout: 10_000 });
     await expect(sheet).not.toHaveAttribute("data-open");
   });
 });

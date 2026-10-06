@@ -2,6 +2,7 @@
 // model is unavailable. Port of `makeAgent` in docs/ui/Felistas Dusk.html, driven by content.
 // Pure (no I/O), so every flow is unit-tested.
 import { z } from "zod";
+import { PROJECT_STATUS } from "@/features/content";
 import { queryGroups, tokenize } from "./rag/tokenize";
 import type { Chunk } from "./rag/types";
 import type { AgentRecord } from "./record";
@@ -129,7 +130,7 @@ export function respondOffline(
 
   const project = rec.projects.find((p) => wordIn(q, p.id) || wordIn(q, p.name));
   if (project) {
-    const state = project.status === "LIVE" ? "in production since" : "in progress since";
+    const state = PROJECT_STATUS[project.status].since;
     return reply(
       `${project.name} is ${project.kind.toLowerCase()}, ${state} ${project.year}. ${project.desc} Built with ${list(project.stack)}.`,
       {

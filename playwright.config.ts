@@ -36,6 +36,10 @@ export default defineConfig({
       : `npm run build && npm run start -- --port ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !isCI,
+    // The suite tests the offline agent, as CI does (no key there): a GEMINI_API_KEY in .env.local
+    // would make answers live, nondeterministic and spend free quota. An empty value wins over the
+    // file, and the app treats it as unset.
+    env: { GEMINI_API_KEY: "" },
     timeout: 180_000,
   },
 });

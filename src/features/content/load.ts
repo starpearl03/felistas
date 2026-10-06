@@ -115,11 +115,11 @@ export async function loadSiteFrom(root: string, publicDir = PUBLIC_DIR): Promis
   ]);
 
   const current = roles.filter((r) => r.data.current);
-  // The Experience ruler and the agent rely on exactly one current role
-  if (current.length !== 1) {
+  // Between roles there is no current one; there can never be two
+  if (current.length > 1) {
     throw new ContentError(
       "experience",
-      `exactly one role must have current: true, found ${current.length}`,
+      `at most one role may have current: true, found ${current.length}`,
     );
   }
 

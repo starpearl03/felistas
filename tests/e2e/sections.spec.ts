@@ -25,29 +25,29 @@ test("see the work scrolls to projects and the page follows", async ({ page }) =
 test("projects: hovering, clicking and focusing a name fills the detail", async ({ page }) => {
   await page.getByRole("button", { name: "See the work" }).click();
   const detail = page.locator("#project-detail");
-  await expect(detail).toContainText("Real-time reconciliation engine");
+  await expect(detail).toContainText("phishing detection system");
 
-  await page.getByRole("button", { name: /^\d{4} Atlas/ }).hover();
-  await expect(detail).toContainText("40k");
-  await expect(page.getByRole("button", { name: /^\d{4} Atlas/ })).toHaveAttribute(
+  await page.getByRole("button", { name: /^\d{4} Sentinel/ }).hover();
+  await expect(detail).toContainText("final-year project");
+  await expect(page.getByRole("button", { name: /^\d{4} Sentinel/ })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
 
-  await page.getByRole("button", { name: /^\d{4} Quorum/ }).focus();
-  await expect(detail).toContainText("Raft");
+  await page.getByRole("button", { name: /^\d{4} Staff Portal/ }).focus();
+  await expect(detail).toContainText("each team sees only its own data");
 });
 
-test("experience: the ruler starts on the current role and selects lanes", async ({ page }) => {
+test("experience: the ruler starts on the latest role and selects lanes", async ({ page }) => {
   const detail = page.locator("#role-detail");
-  await expect(detail).toContainText("Senior Software Engineer");
-  await page.getByRole("button", { name: /Software Engineer at Kestrel Systems/ }).click();
-  await expect(detail).toContainText("Cut API p95 latency by 63%");
+  await expect(detail).toContainText("IT & Software Intern");
+  await page.getByRole("button", { name: /Software Developer Intern at Melsoft/ }).click();
+  await expect(detail).toContainText("school management modules");
 });
 
 test("contact shows the email with a copy action", async ({ page }) => {
-  const email = section(page, "contact").getByRole("link", { name: "hello@felistas.dev" });
-  await expect(email).toHaveAttribute("href", "mailto:hello@felistas.dev");
+  const email = section(page, "contact").getByRole("link", { name: "dev@felistas.co.zw" });
+  await expect(email).toHaveAttribute("href", "mailto:dev@felistas.co.zw");
   await expect(section(page, "contact").getByRole("button", { name: /Copy/ })).toBeVisible();
 });
 

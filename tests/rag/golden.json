@@ -8,17 +8,17 @@
       "expect": ["faq:is-felistas-open-to-new-roles", "profile:card"]
     },
     {
-      "q": "Would they consider moving to another country?",
-      "expect": ["faq:where-does-felistas-work-from-and-are-they-willing-to-relocate"]
+      "q": "Would they take an IT support role?",
+      "expect": ["faq:is-felistas-open-to-new-roles", "profile:card"]
     },
     {
-      "q": "Can they work remotely?",
-      "expect": [
-        "faq:where-does-felistas-work-from-and-are-they-willing-to-relocate",
-        "profile:card"
-      ]
+      "q": "Where is Felistas based?",
+      "expect": ["profile:card", "faq:is-felistas-open-to-new-roles"]
     },
-    { "q": "How many years of experience do they have?", "expect": ["profile:card"] },
+    {
+      "q": "What does Felistas bring to a team?",
+      "expect": ["faq:what-does-felistas-bring-to-a-team", "profile:notes"]
+    },
     {
       "q": "What is their working style?",
       "expect": ["faq:how-does-felistas-like-to-work", "profile:notes"]
@@ -28,113 +28,147 @@
       "expect": ["faq:what-kind-of-team-is-a-good-fit"]
     },
     {
-      "q": "Which programming languages does Felistas use?",
-      "expect": ["skills:card", "skills:notes"]
-    },
-    {
-      "q": "Do they know Rust?",
-      "expect": ["skills:card", "project:quorum:card", "project:quorum:approach"]
-    },
-    {
-      "q": "Has Felistas used Kafka?",
+      "q": "Are they interested in AI?",
       "expect": [
-        "project:ledgerline:card",
-        "project:ledgerline:approach",
-        "skills:card",
-        "skills:notes"
-      ]
-    },
-    { "q": "What frontend frameworks do they use?", "expect": ["skills:card"] },
-    { "q": "Tell me about Ledgerline", "expect": ["project:ledgerline:card"] },
-    {
-      "q": "How does the reconciliation engine match transactions?",
-      "expect": ["project:ledgerline:approach", "project:ledgerline:card"]
-    },
-    { "q": "What problem did Ledgerline solve?", "expect": ["project:ledgerline:problem"] },
-    {
-      "q": "How many transactions a day does it process?",
-      "expect": ["project:ledgerline:card", "project:ledgerline:result"]
-    },
-    { "q": "What is Atlas?", "expect": ["project:atlas:card"] },
-    {
-      "q": "How does the semantic search project combine vector and keyword search?",
-      "expect": ["project:atlas:approach"]
-    },
-    {
-      "q": "How many documents are indexed in Atlas?",
-      "expect": ["project:atlas:card", "project:atlas:result"]
-    },
-    {
-      "q": "Has Felistas built anything with RAG or embeddings?",
-      "expect": [
-        "project:atlas:approach",
-        "project:atlas:card",
-        "role:kestrel-systems:card",
-        "role:kestrel-systems:notes",
+        "faq:what-kind-of-team-is-a-good-fit",
+        "profile:notes",
+        "skills:notes",
         "skills:card"
       ]
     },
     {
-      "q": "What is Quorum and why build it?",
-      "expect": ["project:quorum:card", "project:quorum:why"]
+      "q": "Which programming languages does Felistas use?",
+      "expect": ["skills:card", "skills:notes"]
     },
     {
-      "q": "How is the Raft store tested against failures?",
-      "expect": ["project:quorum:approach"]
-    },
-    { "q": "What's still unfinished in Quorum?", "expect": ["project:quorum:status"] },
-    {
-      "q": "Tell me about the observability dashboard",
-      "expect": ["project:pulse:card", "project:pulse:approach"]
+      "q": "Do they know TypeScript and Next.js?",
+      "expect": ["skills:card", "skills:notes", "project:staff-portal:card"]
     },
     {
-      "q": "How fast does Pulse render?",
-      "expect": ["project:pulse:card", "project:pulse:result"]
+      "q": "Has Felistas used Spring Boot?",
+      "expect": [
+        "project:ecommerce-api:card",
+        "project:ecommerce-api:approach",
+        "skills:card",
+        "skills:notes"
+      ]
     },
     {
-      "q": "Can on-call engineers replay incidents?",
-      "expect": ["project:pulse:card", "project:pulse:approach"]
+      "q": "Can they write PHP with Laravel?",
+      "expect": ["role:melsoft:card", "role:melsoft:notes", "skills:card", "skills:notes"]
     },
     {
-      "q": "Where does Felistas work now?",
-      "expect": ["role:northwind-labs:card", "role:northwind-labs:notes", "profile:card"]
+      "q": "Do they know networking and firewalls?",
+      "expect": [
+        "skills:card",
+        "skills:notes",
+        "role:glow-petroleum:notes",
+        "role:glow-petroleum:card"
+      ]
+    },
+    { "q": "Tell me about SENTRY", "expect": ["project:sentry:card"] },
+    {
+      "q": "How does the phishing detector give a verdict so fast?",
+      "expect": ["project:sentry:approach", "project:sentry:card"]
     },
     {
-      "q": "Does Felistas have leadership experience?",
-      "expect": ["role:northwind-labs:card", "role:northwind-labs:notes"]
+      "q": "What can analysts do on the SENTRY dashboard?",
+      "expect": ["project:sentry:the-dashboard"]
     },
     {
-      "q": "What did they achieve at Kestrel Systems?",
-      "expect": ["role:kestrel-systems:card", "role:kestrel-systems:notes"]
+      "q": "How are the extension and dashboard authenticated?",
+      "expect": ["project:sentry:approach"]
+    },
+    { "q": "What is Sentinel?", "expect": ["project:sentinel:card", "project:sentinel:why"] },
+    {
+      "q": "How does the face recognition work?",
+      "expect": ["project:sentinel:approach", "project:sentinel:card"]
+    },
+    { "q": "How are crime hotspots found?", "expect": ["project:sentinel:approach"] },
+    {
+      "q": "What was the final year project?",
+      "expect": [
+        "project:sentinel:why",
+        "project:sentinel:card",
+        "education:bsc-computer-science:card",
+        "education:bsc-computer-science:notes"
+      ]
+    },
+    { "q": "Tell me about the staff portal", "expect": ["project:staff-portal:card"] },
+    {
+      "q": "How was the staff portal deployed?",
+      "expect": ["project:staff-portal:approach", "role:glow-petroleum:notes"]
     },
     {
-      "q": "How was API latency reduced?",
-      "expect": ["role:kestrel-systems:notes", "role:kestrel-systems:card"]
+      "q": "How does each team see only its own data?",
+      "expect": [
+        "project:staff-portal:card",
+        "project:staff-portal:approach",
+        "role:glow-petroleum:notes"
+      ]
+    },
+    { "q": "What is the e-commerce API?", "expect": ["project:ecommerce-api:card"] },
+    {
+      "q": "Is anything containerised with Docker?",
+      "expect": ["project:ecommerce-api:card", "project:ecommerce-api:approach", "skills:notes"]
     },
     {
-      "q": "Did they mentor anyone?",
-      "expect": ["role:kestrel-systems:card", "role:kestrel-systems:notes"]
+      "q": "What does the assessment portal do?",
+      "expect": [
+        "project:assessment-portal:card",
+        "project:assessment-portal:why",
+        "project:assessment-portal:approach"
+      ]
     },
     {
-      "q": "What freelance work have they done?",
-      "expect": ["role:freelance:card", "role:freelance:notes"]
+      "q": "How do supervisors grade students on internship?",
+      "expect": ["project:assessment-portal:approach", "project:assessment-portal:card"]
     },
     {
-      "q": "Have they deployed to AWS?",
-      "expect": ["role:freelance:card", "role:freelance:notes"]
+      "q": "Where has Felistas worked?",
+      "expect": [
+        "role:glow-petroleum:card",
+        "role:melsoft:card",
+        "role:glow-petroleum:notes",
+        "role:melsoft:notes"
+      ]
+    },
+    {
+      "q": "What did they do at Glow Petroleum?",
+      "expect": ["role:glow-petroleum:card", "role:glow-petroleum:notes"]
+    },
+    {
+      "q": "Has Felistas done a Microsoft 365 migration?",
+      "expect": ["role:glow-petroleum:notes", "role:glow-petroleum:card", "skills:notes"]
+    },
+    {
+      "q": "What IT support experience do they have?",
+      "expect": [
+        "role:glow-petroleum:notes",
+        "role:glow-petroleum:card",
+        "role:melsoft:notes",
+        "skills:notes",
+        "faq:what-does-felistas-bring-to-a-team"
+      ]
+    },
+    { "q": "Did they set up Starlink or CCTV?", "expect": ["role:glow-petroleum:notes"] },
+    {
+      "q": "What did they build at Melsoft?",
+      "expect": ["role:melsoft:card", "role:melsoft:notes"]
+    },
+    {
+      "q": "Have they worked with Sage or QuickBooks?",
+      "expect": ["role:melsoft:notes", "role:melsoft:card", "skills:card", "skills:notes"]
     },
     {
       "q": "What did Felistas study at university?",
       "expect": ["education:bsc-computer-science:card", "education:bsc-computer-science:notes"]
     },
     {
-      "q": "What was the final year project?",
-      "expect": ["education:bsc-computer-science:notes", "education:bsc-computer-science:card"]
+      "q": "What class of degree did they get?",
+      "expect": ["education:bsc-computer-science:card"]
     },
-    {
-      "q": "Do they have any cloud certifications?",
-      "expect": ["education:google-cloud-developer:card", "education:google-cloud-developer:notes"]
-    },
+    { "q": "Do they have any certifications?", "expect": ["education:bsc-computer-science:notes"] },
     {
       "q": "What is Felistas's email address?",
       "expect": ["contact:card", "faq:how-can-i-contact-felistas"]
@@ -143,16 +177,17 @@
     { "q": "How long is the resume?", "expect": ["contact:card"] },
     {
       "q": "What is the selected project's stack?",
-      "context": { "section": "projects", "projectId": "pulse", "roleSlug": null },
-      "expect": ["project:pulse:card"]
+      "context": { "section": "projects", "projectId": "sentinel", "roleSlug": null },
+      "expect": ["project:sentinel:card"]
     },
     {
-      "q": "What was the biggest change in this role?",
-      "context": { "section": "experience", "projectId": null, "roleSlug": "northwind-labs" },
-      "expect": ["role:northwind-labs:notes", "role:northwind-labs:card"]
+      "q": "What were the main duties in this role?",
+      "context": { "section": "experience", "projectId": null, "roleSlug": "melsoft" },
+      "expect": ["role:melsoft:card", "role:melsoft:notes"]
     },
     { "q": "What is their favourite colour?", "expect": [] },
     { "q": "Does Felistas own a cat?", "expect": [] },
-    { "q": "What's the weather in Paris?", "expect": [] }
+    { "q": "What's the weather in Paris?", "expect": [] },
+    { "q": "Is Felistas married?", "expect": [] }
   ]
 }

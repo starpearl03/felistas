@@ -3,6 +3,8 @@ import { Companion, type CompanionConfig } from "@/features/companion";
 import { loadSite } from "@/features/content/server";
 import { About, Contact, Education, Experience, Intro, Projects } from "@/features/sections";
 import { Stage, TopBar } from "@/features/stage";
+import { resolveSiteUrl } from "@/lib/site-url";
+import { jsonLdScript, structuredData } from "./seo";
 
 export default async function Home() {
   const site = await loadSite();
@@ -46,6 +48,11 @@ export default async function Home() {
         </div>
       </main>
       <Companion config={companion} />
+      {/* Who this page is about, for search engines (schema.org Person on a ProfilePage) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(structuredData(site, resolveSiteUrl())) }}
+      />
     </Stage>
   );
 }

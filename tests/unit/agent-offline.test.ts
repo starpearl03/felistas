@@ -7,12 +7,13 @@ import {
   greetingChips,
   respondOffline,
 } from "@/features/agent";
-import { CONTENT_DIR, loadSiteFrom } from "@/features/content/server";
+import { loadSiteFrom } from "@/features/content/server";
+import { FIXTURE_CONTENT } from "../fixtures/paths";
 
 let rec: AgentRecord;
 
 beforeAll(async () => {
-  rec = buildRecord(await loadSiteFrom(CONTENT_DIR));
+  rec = buildRecord(await loadSiteFrom(FIXTURE_CONTENT));
 });
 
 const ask = (text: string, flow: ContactFlow | null = null) => respondOffline(text, flow, rec);

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { SectionId, Site } from "@/features/content";
+import { PROJECT_STATUS, type SectionId, type Site } from "@/features/content";
 import type { Chunk, ChunkKind } from "./types";
 
 // Chunking for retrieval (contextual chunk headers, as in Anthropic's "Contextual Retrieval"):
@@ -178,7 +178,7 @@ export function buildChunks(site: Site): Chunk[] {
       id: `project:${pr.id}:card`,
       kind: "card",
       text: [
-        `${pr.name} is a ${pr.kind.toLowerCase()} project, ${pr.status === "LIVE" ? "live" : "a work in progress"} since ${pr.year}.`,
+        `${pr.name} is a ${pr.kind.toLowerCase()} project, ${PROJECT_STATUS[pr.status].since} ${pr.year}.`,
         pr.desc,
         `Stack: ${pr.stack.join(", ")}.`,
         `${pr.metric} ${pr.metricLabel}.`,

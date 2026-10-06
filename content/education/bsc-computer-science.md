@@ -1,10 +1,11 @@
 ---
-sample: true
-year: "2020"
-title: BSc Computer Science
-org: University of Technology · 2016 – 2020
+year: "2026"
+title: BSc Honours, Computer Science
+org: University of Zimbabwe
 order: 1
-note: Distributed systems and machine learning electives. Final project, a fault-tolerant message queue.
+note: Upper Second Class (2:1), with an AI research focus. Final-year project, Sentinel, a crime analysis and face recognition system.
 ---
 
-The final-year project was a fault-tolerant message queue with replicated logs and automatic failover. It started the interest in distributed systems that later led to Ledgerline and Quorum.
+The degree finished with an AI research focus. The final-year project, Sentinel, matches faces from CCTV footage against a watch list and maps crime hotspots.
+
+Alongside the degree, Felistas earned certifications in Huawei ICT (eHuawei), Scrum Fundamentals and Statistics (Alison).
