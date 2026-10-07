@@ -88,3 +88,37 @@ test("Google Search Console's verification file is served from the root", async 
   expect(res.status()).toBe(200);
   expect(await res.text()).toBe("google-site-verification: googlebc5c969621f0344d.html");
 });
+
+test("search engines get a valid site icon in every format they read", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/");
+  const links = await page
+    .locator('head link[rel="icon"], head link[rel="apple-touch-icon"]')
+    .evaluateAll((els) =>
+      els.map((el) => ({
+        rel: el.getAttribute("rel"),
+        href: el.getAttribute("href") ?? "",
+        sizes: el.getAttribute("sizes"),
+        type: el.getAttribute("type"),
+      })),
+    );
+  // Google shows a square icon whose size is a multiple of 48px; Bing reads /favicon.ico
+  const png = links.find((l) => l.type === "image/png" && l.rel === "icon");
+  expect(png?.sizes).toBe("192x192");
+  expect(links.some((l) => l.href.startsWith("/favicon.ico"))).toBe(true);
+  expect(links.some((l) => l.type === "image/svg+xml")).toBe(true);
+  expect(links.some((l) => l.rel === "apple-touch-icon" && l.sizes === "180x180")).toBe(true);
+
+  for (const { href } of links) expect((await request.get(href)).status(), href).toBe(200);
+  for (const path of ["/favicon.ico", "/icon-512.png", "/icon-maskable-512.png"]) {
+    expect((await request.get(path)).status(), path).toBe(200);
+  }
+  const manifest = await (await request.get("/manifest.webmanifest")).json();
+  expect(manifest.icons.map((i: { sizes: string }) => i.sizes)).toEqual([
+    "192x192",
+    "512x512",
+    "512x512",
+  ]);
+});
