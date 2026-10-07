@@ -14,6 +14,11 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     display: "standalone",
     background_color: PALETTE.bg,
     theme_color: PALETTE.bg,
-    icons: [{ src: "/icon", sizes: "64x64", type: "image/png" }],
+    // Built by scripts/build-icons.ts (npm run icons)
+    icons: [
+      { src: "/icon.png", sizes: "192x192", type: "image/png" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+    ],
   };
 }

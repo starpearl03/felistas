@@ -22,7 +22,8 @@
     "rag:index": "tsx --conditions=react-server scripts/build-rag-index.ts",
     "prebuild": "npm run rag:index",
     "rag:eval": "tsx --conditions=react-server scripts/rag-eval.ts",
-    "rag:gate": "npm run rag:eval -- --bm25 --min-recall=0.9"
+    "rag:gate": "npm run rag:eval -- --bm25 --min-recall=0.9",
+    "icons": "tsx scripts/build-icons.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.88",
@@ -53,6 +54,7 @@
     "jsdom": "^29.1.1",
     "prettier": "^3.9.9",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
